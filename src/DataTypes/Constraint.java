@@ -1,4 +1,4 @@
-package SimulableModel;
+package DataTypes;
 
 public class Constraint {
 }

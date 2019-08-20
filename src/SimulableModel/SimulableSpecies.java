@@ -1,5 +1,6 @@
 package SimulableModel;
 
+import DataTypes.Expression;
 import Model.Species;
 
 public abstract class SimulableSpecies {
