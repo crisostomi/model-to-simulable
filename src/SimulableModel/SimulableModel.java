@@ -5,7 +5,7 @@ import Model.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class SimulableModel<T extends SimulableReaction> {
+public abstract class SimulableModel {
 
     private final Model modelInstantiate;
     private Set<LinkTypeSimulableReactionComprises> linkSimulableReactionComprisesSet = new HashSet<LinkTypeSimulableReactionComprises>();
