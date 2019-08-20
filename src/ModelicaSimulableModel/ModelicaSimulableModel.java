@@ -9,7 +9,7 @@ import java.util.Map;
 import DataTypes.Module;
 
 
-public abstract class ModelicaSimulableModel extends SimulableModel {
+public class ModelicaSimulableModel extends SimulableModel {
 
     public ModelicaSimulableModel(Model model) throws PreconditionsException{
         super(model);
