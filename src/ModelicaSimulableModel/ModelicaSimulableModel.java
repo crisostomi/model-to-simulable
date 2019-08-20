@@ -1,8 +1,11 @@
 package ModelicaSimulableModel;
 
+import DataTypes.ModelicaCode;
 import Model.Model;
 import SimulableModel.SimulableModel;
 import Model.*;
+
+import java.util.Set;
 
 
 public abstract class ModelicaSimulableModel extends SimulableModel {
@@ -23,15 +26,15 @@ public abstract class ModelicaSimulableModel extends SimulableModel {
 
 
     @Override
-    public String getModules() {
+    public Set<ModelicaCode> getModules() {
         return null;
     }
 
-    public abstract String getReactionsCode();
+    public ModelicaCode getReactionsCode() {return null;}
 
-    public abstract String getModuleCode();
+    public ModelicaCode getModuleCode() {return null;}
 
-    public String getParameters(){
+    public ModelicaCode getParameters(){
         return null;
     }
 }

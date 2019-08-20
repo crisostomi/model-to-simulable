@@ -1,5 +1,6 @@
 package ModelicaSimulableModel;
 
+import DataTypes.ModelicaCode;
 import Model.Species;
 import SimulableModel.SimulableSpecies;
 
@@ -9,9 +10,8 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
         super(s);
     }
 
-
     @Override
-    public ModelicaExpression getODE_RHS() {
+    public ModelicaCode getODE_RHS() {
         return null;
     }
 }

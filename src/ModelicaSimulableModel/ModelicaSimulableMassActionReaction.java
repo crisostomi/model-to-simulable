@@ -1,6 +1,6 @@
 package ModelicaSimulableModel;
 
-import DataTypes.ModelicaConstraint;
+import DataTypes.ModelicaCode;
 import Model.Reaction;
 
 public class ModelicaSimulableMassActionReaction extends ModelicaSimulableReaction{
@@ -14,12 +14,12 @@ public class ModelicaSimulableMassActionReaction extends ModelicaSimulableReacti
     }
 
     @Override
-    public ModelicaConstraint getRateFormula() {
+    public ModelicaCode getRateFormula() {
         return null;
     }
 
     @Override
-    public ModelicaConstraint getRateInvFormula() {
+    public ModelicaCode getRateInvFormula() {
         return null;
     }
 }
