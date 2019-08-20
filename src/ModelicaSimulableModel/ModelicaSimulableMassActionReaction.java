@@ -6,13 +6,11 @@ import SimulableModel.*;
 
 import java.util.HashSet;
 import java.util.Set;
-import DataTypes.PreconditionsException;
 import Model.LinkTypeProduct;
 import Model.LinkTypeReactant;
 import Model.Reaction;
 import Model.Species;
 
-import java.util.Set;
 
 public class ModelicaSimulableMassActionReaction extends ModelicaSimulableReaction{
     public ModelicaSimulableMassActionReaction(Reaction reaction) throws PreconditionsException {
@@ -66,7 +64,7 @@ public class ModelicaSimulableMassActionReaction extends ModelicaSimulableReacti
                 parameters.append("minRateInvConstant = "+minRateInvConstant);
                 parameters.append("maxRateInvConstant = "+maxRateInvConstant);
             }
-            catch (PreconditionsException e) {}
+            catch (DataTypes.PreconditionsException e) {}
 
         }
         parameters.append(">");
