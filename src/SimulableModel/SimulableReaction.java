@@ -39,4 +39,7 @@ public abstract class SimulableReaction {
                     "It is necessary to show an instance of LinkComprises to invoke this method");
         linkSimulableReactionComprises = null;
     }
+
+    public abstract String getParameters();
+
 }

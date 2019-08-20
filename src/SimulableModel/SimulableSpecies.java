@@ -7,8 +7,8 @@ public abstract class SimulableSpecies {
 
     private LinkTypeSimulableSpeciesComprises linkSimulableSpeciesComprises;
     private final Species speciesInstantiate;
-    
-    public SimulableSpecies(Species species){
+
+    public SimulableSpecies(Species species) {
         this.speciesInstantiate = species;
     }
 
@@ -37,4 +37,6 @@ public abstract class SimulableSpecies {
                     "It is necessary to show an instance of LinkComprises to invoke this method");
         linkSimulableSpeciesComprises = null;
     }
+
+    public abstract String getParameters();
 }

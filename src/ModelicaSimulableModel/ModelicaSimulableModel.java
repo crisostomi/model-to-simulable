@@ -6,6 +6,7 @@ import Model.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import DataTypes.Module;
 
 
 public abstract class ModelicaSimulableModel extends SimulableModel {
@@ -27,7 +28,7 @@ public abstract class ModelicaSimulableModel extends SimulableModel {
 
 
     @Override
-    public Map<String, Module> getModules() {
+    public Map<String, ModelicaCode> getModules() {
         HashMap<String, ModelicaCode> map = new HashMap<>();
         StringBuilder reactionCode = new StringBuilder();
 
@@ -38,6 +39,7 @@ public abstract class ModelicaSimulableModel extends SimulableModel {
             }
         }
         map.put("Reactions",getReactionsCode());
+        return map;
     }
 
     public ModelicaCode getReactionsCode() {
@@ -57,17 +59,48 @@ public abstract class ModelicaSimulableModel extends SimulableModel {
 
                 if (reaction.isReversible()){
                     reacDeclarations.append("parameter Real " + r_id + "_rateInvConstant;\n");
-                    String rateFormula = ((ModelicaCode) simReaction.getRa()).getCode();
-
-                    reacDeclarations.append()
+                    String rateInvFormula = ((ModelicaCode) simReaction.getRateInvFormula()).getCode();
+                    reacEquation.append(r_id + "_rateInv = " + rateInvFormula);
                 }
             }
         }
+        String result = reacDeclarations.toString() + "\n\n\n" + reacEquation.toString();
+        return new ModelicaCode(result);
     }
 
-    public ModelicaCode getModuleCode(Compartment comp) {return null;}
+    public ModelicaCode getModuleCode(Compartment comp) {
+        StringBuilder declarations = new StringBuilder();
+        StringBuilder initialEquation = new StringBuilder("initial equation \n");
+        StringBuilder equation = new StringBuilder("equation \n");
+        for(LinkTypeSpeciesCompartment link: comp.getLinkSpeciesCompartmentSet()){
+            Species species = link.getSpecies();
+            String s_id = species.getId();
+            SimulableSpecies simSpecies = this.getSimulableSpecies(s_id);
+            if (simSpecies != null) {
+                declarations.append("Real "+s_id+";\n");
+                equation.append("der(+"+s_id+") = "+simSpecies.getODE_RHS());
+                initialEquation.append(s_id+" = "+s_id+"_init;\n");
+            }
+
+        }
+        StringBuilder code = new StringBuilder();
+        code.append("model "+comp.getId()+";\n");
+        code.append(initialEquation);
+        code.append(equation);
+        return new ModelicaCode(code.toString());
+    }
 
     public ModelicaCode getParameters(){
-        return null;
+        StringBuilder parameters = new StringBuilder();
+        for (LinkTypeSimulableSpeciesComprises link: this.getLinkSimulableSpeciesComprisesSet()){
+            SimulableSpecies simSpecies = link.getSimulableSpecies();
+            parameters.append(simSpecies.getParameters());
+        }
+        parameters.append("\n");
+        for (LinkTypeSimulableReactionComprises link: this.getLinkSimulableReactionComprisesSet()){
+            SimulableReaction simReac = link.getSimulableReaction();
+            parameters.append(simReac.getParameters());
+        }
+        return new ModelicaCode(parameters.toString());
     }
 }

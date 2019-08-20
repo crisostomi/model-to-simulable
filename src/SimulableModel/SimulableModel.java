@@ -5,6 +5,7 @@ import Model.*;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import DataTypes.Module;
 
 public abstract class SimulableModel {
 
@@ -17,7 +18,7 @@ public abstract class SimulableModel {
         this.modelInstantiate = model;
     }
 
-    public abstract Map<String, Module> getModules();
+    public abstract Map<String, ? extends Module> getModules();
 
     public void insertLinkSimulableReactionComprises(LinkSimulableReactionComprises pass, LinkTypeSimulableReactionComprises l)
             throws PreconditionsException {
