@@ -13,11 +13,10 @@ import Model.Species;
 
 
 public class ModelicaSimulableMassActionReaction extends ModelicaSimulableReaction{
-    public ModelicaSimulableMassActionReaction(Reaction reaction) throws PreconditionsException {
+    public ModelicaSimulableMassActionReaction(Reaction reaction, SimulableModel model) throws PreconditionsException {
         super(reaction);
 
         Set<Species> speciesInvolved = new HashSet<>();
-        SimulableModel model = this.getLinkSimulableReactionComprises().getSimulableModel();
         for (LinkTypeReactant l: reaction.getReactants()) {
             Species s = l.getSpecies();
             speciesInvolved.add(s);

@@ -8,6 +8,7 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
 
     public ModelicaSimulableSpecies(Species s) {
         super(s);
+
     }
 
     @Override

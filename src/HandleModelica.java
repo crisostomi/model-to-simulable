@@ -8,7 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 
-public class HandleModel {
+public class HandleModelica {
     public static ModelicaSimulableModel buildSimulableModel(Model m) throws PreconditionsException {
         return new ModelicaSimulableModel(m);
     }
@@ -21,7 +21,7 @@ public class HandleModel {
             String fileName = entry.getKey();
             ModelicaCode code = entry.getValue();
 
-            File f = new File(outputFolder + "/"+ fileName);
+            File f = new File(outputFolder + "/"+ fileName + ".mo");
             FileWriter fw = new FileWriter(f);
             fw.write(code.getCode());
             fw.close();

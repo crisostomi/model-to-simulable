@@ -19,7 +19,7 @@ public class ModelicaSimulableModel extends SimulableModel {
                 Compartment comp = (Compartment) bioEntity;
                 for (LinkTypeReactionCompartment linkReacComp: comp.getLinkReactionCompartmentSet()){
                     Reaction reaction = linkReacComp.getReaction();
-                    ModelicaSimulableReaction simulableReaction = new ModelicaSimulableMassActionReaction(reaction);
+                    ModelicaSimulableReaction simulableReaction = new ModelicaSimulableMassActionReaction(reaction, this);
                     LinkSimulableReactionComprises.insertLink(this, simulableReaction);
                 }
             }
