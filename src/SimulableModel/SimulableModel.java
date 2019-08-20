@@ -3,6 +3,7 @@ package SimulableModel;
 import Model.*;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class SimulableModel<T extends SimulableReaction> {
@@ -16,7 +17,7 @@ public abstract class SimulableModel<T extends SimulableReaction> {
         this.modelInstantiate = model;
     }
 
-    public abstract Set<Module> getModules();
+    public abstract Map<String, Module> getModules();
 
     public void insertLinkSimulableReactionComprises(LinkSimulableReactionComprises pass, LinkTypeSimulableReactionComprises l)
             throws PreconditionsException {
