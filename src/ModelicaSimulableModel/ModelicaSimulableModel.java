@@ -1,8 +1,7 @@
 package ModelicaSimulableModel;
 
 import DataTypes.ModelicaCode;
-import Model.Model;
-import SimulableModel.SimulableModel;
+import SimulableModel.*;
 import Model.*;
 
 import java.util.Set;
@@ -10,7 +9,7 @@ import java.util.Set;
 
 public abstract class ModelicaSimulableModel extends SimulableModel {
 
-    public ModelicaSimulableModel(Model model) {
+    public ModelicaSimulableModel(Model model) throws PreconditionsException{
         super(model);
         for (LinkTypeComprises linkModelBioEntity: model.getLinkComprisesSet()){
             BiologicalEntity bioEntity = linkModelBioEntity.getBiologicalEntity();
@@ -19,6 +18,7 @@ public abstract class ModelicaSimulableModel extends SimulableModel {
                 for (LinkTypeReactionCompartment linkReacComp: comp.getLinkReactionCompartmentSet()){
                     Reaction reaction = linkReacComp.getReaction();
                     ModelicaSimulableReaction simulableReaction = new ModelicaSimulableMassActionReaction(reaction);
+                    LinkSimulableReactionComprises.insertLink(this, simulableReaction);
                 }
             }
         }
