@@ -5,13 +5,18 @@ import Model.Reaction;
 
 public abstract class SimulableReaction {
 
+    private final Reaction reactionInstantiate;
     private LinkTypeSimulableReactionComprises linkSimulableReactionComprises;
 
     public SimulableReaction(Reaction reaction){
-
+        this.reactionInstantiate = reaction;
     }
 
     public abstract Constraint getRateFormula();
+
+    public Reaction getReactionInstantiate() {
+        return reactionInstantiate;
+    }
 
     public LinkTypeSimulableReactionComprises getLinkSimulableReactionComprises() {
         return linkSimulableReactionComprises;

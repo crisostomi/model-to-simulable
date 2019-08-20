@@ -50,6 +50,10 @@ public abstract class SimulableModel<T extends SimulableReaction> {
         linkSimulableSpeciesComprisesSet.remove(l);
     }
 
+    public Model getModelInstantiate() {
+        return modelInstantiate;
+    }
+
     public Set<LinkTypeSimulableReactionComprises> getLinkSimulableReactionComprisesSet() {
         return linkSimulableReactionComprisesSet;
     }
@@ -59,10 +63,22 @@ public abstract class SimulableModel<T extends SimulableReaction> {
     }
 
     public SimulableSpecies getSimulableSpecies(String id){
+        for (LinkTypeSimulableSpeciesComprises l: this.linkSimulableSpeciesComprisesSet) {
+            SimulableSpecies ss = l.getSimulableSpecies();
+            if (ss.getSpeciesInstantiate().getId().equals(id)) {
+                return ss;
+            }
+        }
         return null;
     }
 
     public SimulableReaction getSimulableReaction(String id){
+        for (LinkTypeSimulableReactionComprises l: this.linkSimulableReactionComprisesSet) {
+            SimulableReaction sr = l.getSimulableReaction();
+            if (sr.getReactionInstantiate().getId().equals(id)) {
+                return sr;
+            }
+        }
         return null;
     }
 }

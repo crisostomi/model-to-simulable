@@ -6,12 +6,17 @@ import Model.Species;
 public abstract class SimulableSpecies {
 
     private LinkTypeSimulableSpeciesComprises linkSimulableSpeciesComprises;
+    private final Species speciesInstantiate;
     
     public SimulableSpecies(Species species){
-
+        this.speciesInstantiate = species;
     }
 
     public abstract Expression getODE_RHS();
+
+    public Species getSpeciesInstantiate() {
+        return speciesInstantiate;
+    }
 
     public LinkTypeSimulableSpeciesComprises getLinkSimulableSpeciesComprises() {
         return linkSimulableSpeciesComprises;
