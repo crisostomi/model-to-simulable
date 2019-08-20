@@ -2,7 +2,7 @@ package SimulableModel;
 
 import Model.*;
 
-public class SimulableModel {
+public abstract class SimulableModel {
 
     public SimulableModel(Model model){
         for (LinkTypeComprises linkModelBioEntity: model.getLinkComprisesSet()){
@@ -15,5 +15,15 @@ public class SimulableModel {
                 }
             }
         }
+    }
+
+    public abstract String getModules();
+
+    public SimulableSpecies getSimulableSpecies(String id){
+        return null;
+    }
+
+    public SimulableReaction getSimulableReaction(String id){
+        return null;
     }
 }
