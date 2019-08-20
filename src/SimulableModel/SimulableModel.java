@@ -2,7 +2,7 @@ package SimulableModel;
 
 import Model.*;
 
-public abstract class SimulableModel {
+public abstract class SimulableModel<T extends SimulableReaction> {
 
     public SimulableModel(Model model){
         for (LinkTypeComprises linkModelBioEntity: model.getLinkComprisesSet()){
@@ -11,7 +11,7 @@ public abstract class SimulableModel {
                 Compartment comp = (Compartment) bioEntity;
                 for (LinkTypeReactionCompartment linkReacComp: comp.getLinkReactionCompartmentSet()){
                     Reaction reaction = linkReacComp.getReaction();
-                    SimulableReaction simulableReaction = new SimulableReaction(reaction);
+                    SimulableReaction simulableReaction = new T(reaction);
                 }
             }
         }

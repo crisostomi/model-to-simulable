@@ -1,5 +1,6 @@
 package ModelicaSimulableModel;
 
+import DataTypes.ModelicaConstraint;
 import Model.Reaction;
 import SimulableModel.SimulableReaction;
 
@@ -11,8 +12,8 @@ public abstract class ModelicaSimulableReaction extends SimulableReaction {
 
     public abstract String getParameters();
 
-    public abstract String getRateFormula();
+    public abstract ModelicaConstraint getRateFormula();
 
-    public abstract String getRateInvFormula();
+    public abstract ModelicaConstraint getRateInvFormula();
 
 }
