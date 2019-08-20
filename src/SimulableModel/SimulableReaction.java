@@ -14,6 +14,8 @@ public abstract class SimulableReaction {
 
     public abstract Constraint getRateFormula();
 
+    public abstract Constraint getRateInvFormula();
+
     public Reaction getReactionInstantiate() {
         return reactionInstantiate;
     }
