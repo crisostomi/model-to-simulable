@@ -1,4 +1,4 @@
 package DataTypes;
 
-public class Module {
+public interface Module {
 }

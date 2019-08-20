@@ -1,8 +1,6 @@
 package ModelicaSimulableModel;
 
-import DataTypes.ModelicaExpression;
 import Model.Species;
-import DataTypes.Expression;
 import SimulableModel.SimulableSpecies;
 
 public class ModelicaSimulableSpecies extends SimulableSpecies {

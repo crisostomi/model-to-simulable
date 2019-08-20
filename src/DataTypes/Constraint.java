@@ -1,4 +1,4 @@
 package DataTypes;
 
-public class Constraint {
+public interface Constraint {
 }
