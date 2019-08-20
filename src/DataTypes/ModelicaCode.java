@@ -1,6 +1,12 @@
 package DataTypes;
 
 public class ModelicaCode implements Constraint, Expression, Module {
+
+    private String code;
+
+    public ModelicaCode(String code) {
+        this.code = code;
+    }
     public String getCode() {
         return code;
     }
@@ -9,9 +15,7 @@ public class ModelicaCode implements Constraint, Expression, Module {
         this.code = code;
     }
 
-    private String code;
-
-    public ModelicaCode(String code) {
-        this.code = code;
+    public boolean isEmpty() {
+        return this.code.isEmpty();
     }
 }
