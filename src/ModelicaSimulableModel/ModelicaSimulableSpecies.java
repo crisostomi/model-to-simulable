@@ -5,6 +5,9 @@ import DataTypes.Parameter;
 import Model.*;
 import SimulableModel.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class ModelicaSimulableSpecies extends SimulableSpecies {
 
     public ModelicaSimulableSpecies(Species s) {
@@ -66,5 +69,19 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
         p.addProperty("maxInitialAmount", max_ia.toString());
 
         return p;
+    }
+
+    public Set<Reaction> getInvolvedReactions(){
+        Set<Reaction> reactions = new HashSet<>();
+        for (LinkTypeReactant linkReactant:this.getSpeciesInstantiate().getLinkReactantSet()){
+            Reaction reaction = linkReactant.getReaction();
+            reactions.add(reaction);
+        }
+        for (LinkTypeProduct linkProduct:this.getSpeciesInstantiate().getLinkProductSet()){
+            Reaction reaction = linkProduct.getReaction();
+            reactions.add(reaction);
+        }
+        return reactions;
+
     }
 }

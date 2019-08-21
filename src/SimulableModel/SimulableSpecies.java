@@ -2,7 +2,10 @@ package SimulableModel;
 
 import DataTypes.Expression;
 import DataTypes.Parameter;
+import Model.Reaction;
 import Model.Species;
+
+import java.util.Set;
 
 public abstract class SimulableSpecies {
 
@@ -40,4 +43,7 @@ public abstract class SimulableSpecies {
     }
 
     public abstract Parameter getParameters();
+
+
+    public abstract Set<Reaction> getInvolvedReactions();
 }

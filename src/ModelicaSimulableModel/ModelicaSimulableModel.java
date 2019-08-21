@@ -5,10 +5,7 @@ import DataTypes.Parameter;
 import SimulableModel.*;
 import Model.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class ModelicaSimulableModel extends SimulableModel {
@@ -58,10 +55,20 @@ public class ModelicaSimulableModel extends SimulableModel {
                 String rateFormula = ((ModelicaCode) simReaction.getRateFormula()).getCode();
                 reacEquation.append("\t\t"+r_id + "_rate = " + rateFormula + ";\n");
 
+                for (LinkTypeReactant linkReactant: reaction.getReactants()){
+                    Species species = linkReactant.getSpecies();
+                    reacDeclarations.append("\tReal "+species.getId()+";\n");
+                }
+
                 if (reaction.isReversible()){
                     reacDeclarations.append("\tparameter Real " + r_id + "_rateInvConstant;\n");
                     String rateInvFormula = ((ModelicaCode) simReaction.getRateInvFormula()).getCode();
                     reacEquation.append("\t\t"+r_id + "_rateInv = " + rateInvFormula + ";\n");
+
+                    for (LinkTypeProduct linkProduct: reaction.getProducts()){
+                        Species species = linkProduct.getSpecies();
+                        reacDeclarations.append("\tReal "+species.getId()+";\n");
+                    }
                 }
             }
         }
@@ -84,6 +91,12 @@ public class ModelicaSimulableModel extends SimulableModel {
             String s_id = species.getId();
             SimulableSpecies simSpecies = this.getSimulableSpecies(s_id);
             if (simSpecies != null) {
+
+                Set<Reaction> reactions = simSpecies.getInvolvedReactions();
+                for (Reaction reaction: reactions){
+                    declarations.append("\tReal "+reaction.getId()+"_rate;\n");
+                }
+
                 declarations.append("\tReal "+s_id+";\n");
                 declarations.append("\tparameter Real "+s_id+"_init;\n");
                 String rhs = ((ModelicaCode)simSpecies.getODE_RHS()).getCode();
