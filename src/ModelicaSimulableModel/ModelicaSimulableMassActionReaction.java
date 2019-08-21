@@ -52,16 +52,16 @@ public class ModelicaSimulableMassActionReaction extends ModelicaSimulableReacti
         double minRateConstant = reaction.getRate().getLowerBound();
         double maxRateConstant = reaction.getRate().getUpperBound();
 
-        parameters.append("id = \""+r_id+"\" ");
-        parameters.append("minRateConstant = \"" + minRateConstant+"\" ");
-        parameters.append("maxRateConstant = \"" + maxRateConstant+"\" ");
+        parameters.append("id=\""+r_id+"\" ");
+        parameters.append("minRateConstant=\"" + minRateConstant+"\" ");
+        parameters.append("maxRateConstant=\"" + maxRateConstant+"\"");
 
         if (reaction.isReversible()){
             try{
                 double minRateInvConstant = reaction.getRateInv().getLowerBound();
                 double maxRateInvConstant = reaction.getRateInv().getUpperBound();
-                parameters.append("minRateInvConstant = \""+minRateInvConstant+"\" ");
-                parameters.append("maxRateInvConstant = \""+maxRateInvConstant+"\" ");
+                parameters.append("minRateInvConstant=\""+minRateInvConstant+"\" ");
+                parameters.append("maxRateInvConstant=\""+maxRateInvConstant+"\"");
             }
             catch (DataTypes.PreconditionsException e) {}
 

@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class Main {
     public static void main(String[] args) {
-        String projectFolder = "/home/scacio/Dropbox/Tesisti/software/development/KnowledgeAcquisition";
+        String projectFolder = "/home/don/Dropbox/Tesisti/software/development/KnowledgeAcquisition";
         String testFolder = projectFolder + "/test-cases/test-case-4";
 
         String kbPath = testFolder + "/in/galactose.sbml";
