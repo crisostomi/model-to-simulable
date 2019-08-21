@@ -33,14 +33,17 @@ public class ModelicaSimulableModel extends SimulableModel {
         for (LinkTypeComprises link: this.getModelInstantiate().getLinkComprisesSet()){
             BiologicalEntity bioEntity = link.getBiologicalEntity();
             if (bioEntity instanceof Compartment){
-                map.put(bioEntity.getId(),getModuleCode((Compartment)bioEntity));
+                Compartment comp = (Compartment) bioEntity;
+                String fileName = comp.getId().substring(0, 1).toUpperCase() + comp.getId().substring(1);
+                map.put(fileName,getModuleCode(comp));
             }
         }
-        map.put("Reactions",getReactionsCode());
+        map.put("Reactions", getReactionsCode());
+        map.put("System", getLinkingModule());
         return map;
     }
 
-    public ModelicaCode getReactionsCode() {
+    private ModelicaCode getReactionsCode() {
         StringBuilder reacDeclarations = new StringBuilder();
         StringBuilder reacEquation = new StringBuilder("\tequation\n");
         for (LinkTypeComprises link:this.getModelInstantiate().getLinkComprisesSet()){
@@ -82,7 +85,9 @@ public class ModelicaSimulableModel extends SimulableModel {
         return new ModelicaCode(code.toString());
     }
 
-    public ModelicaCode getModuleCode(Compartment comp) {
+    private ModelicaCode getModuleCode(Compartment comp) {
+        // TODO: fix repetition of declaration of rates
+
         StringBuilder declarations = new StringBuilder();
         StringBuilder initialEquation = new StringBuilder("\tinitial equation \n");
         StringBuilder equation = new StringBuilder("\tequation \n");
@@ -113,6 +118,83 @@ public class ModelicaSimulableModel extends SimulableModel {
         code.append(initialEquation + "\n\n");
         code.append(equation + "\n\n");
         code.append("end " + comp.getId() + ";\n\n");
+        return new ModelicaCode(code.toString());
+    }
+
+    private ModelicaCode getLinkingModule() {
+        StringBuilder code = new StringBuilder("model System\n");
+
+        StringBuilder declarations = new StringBuilder();
+        StringBuilder equations = new StringBuilder("\tequation\n");
+        declarations.append("\tReactions reactions;\n");
+
+        for (LinkTypeComprises link: this.getModelInstantiate().getLinkComprisesSet()) {
+            BiologicalEntity be = link.getBiologicalEntity();
+            if (be instanceof Compartment) {
+                Compartment comp = (Compartment) be;
+                Set<Reaction> reactionsInvolvedInComp = new HashSet<>();
+                String className = comp.getId().substring(0, 1).toUpperCase() + comp.getId().substring(1);
+                declarations.append("\t" + className + " " + comp.getId());
+
+                for (LinkTypeSpeciesCompartment linkSpecies: comp.getLinkSpeciesCompartmentSet()) {
+                    Species species = linkSpecies.getSpecies();
+                    String s_id = species.getId();
+                    SimulableSpecies ss = this.getSimulableSpecies(s_id);
+
+                    if (ss != null) {
+                        Set<Reaction> reactions = ss.getInvolvedReactions();
+                        reactionsInvolvedInComp.addAll(reactions);
+                    }
+                }
+
+                for (Reaction r: reactionsInvolvedInComp) {
+                    equations.append(
+                            "\t\t"+
+                            comp.getId() + "." + r.getId() + "_rate" +
+                            " = " +
+                            "reactions" + "." + r.getId() + "_rate" +
+                            ";\n"
+                    );
+                }
+            }
+        }
+
+        Set<Species> speciesInvolved = new HashSet<>();
+
+        for (LinkTypeComprises l: this.getModelInstantiate().getLinkComprisesSet()) {
+            BiologicalEntity be = l.getBiologicalEntity();
+            if (be instanceof Reaction) {
+                Reaction reaction = (Reaction) be;
+                String r_id = reaction.getId();
+
+                for (LinkTypeReactant linkReactant: reaction.getReactants()) {
+                    Species s = linkReactant.getSpecies();
+                    speciesInvolved.add(s);
+                }
+
+                if (reaction.isReversible()) {
+                    for (LinkTypeProduct linkProduct: reaction.getProducts()) {
+                        Species s = linkProduct.getSpecies();
+                        speciesInvolved.add(s);
+                    }
+                }
+            }
+        }
+
+        for (Species s: speciesInvolved) {
+            Compartment comp = s.getLinkSpeciesCompartment().getCompartment();
+            equations.append(
+                    "\t\t" +
+                    comp.getId() + "." + s.getId() +
+                    " = " +
+                    "reactions" + "." + s.getId() +
+                    ";\n"
+            );
+        }
+
+        code.append(declarations + "\n\n");
+        code.append(equations + "\n\n");
+        code.append("end System;\n");
         return new ModelicaCode(code.toString());
     }
 
