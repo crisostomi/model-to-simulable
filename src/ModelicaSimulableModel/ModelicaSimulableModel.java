@@ -108,9 +108,10 @@ public class ModelicaSimulableModel extends SimulableModel {
                 declarations.append("\tReal "+s_id+";\n");
                 parameters.append("\tparameter Real "+s_id+"_init;\n");
                 String rhs = ((ModelicaCode)simSpecies.getODE_RHS()).getCode();
-                if (!rhs.isEmpty()) {
-                    equation.append("\t\tder("+s_id+") = "+ rhs + ";\n");
+                if (rhs.isEmpty()) {
+                    rhs = "0";
                 }
+                equation.append("\t\tder("+s_id+") = "+ rhs + ";\n");
                 initialEquation.append("\t\t"+s_id+" = "+s_id+"_init;\n");
             }
         }
