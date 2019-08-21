@@ -24,14 +24,10 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
             Reaction reac = l.getReaction();
             int stoich = l.getStoichiometry();
 
-            SimulableReaction r = this.getLinkSimulableSpeciesComprises().getSimulableModel().getSimulableReaction(reac.getId());
-
-            ModelicaCode rateFormula = (ModelicaCode)r.getRateFormula();
-            sb.append(" -1 * " + stoich + " * " + rateFormula.getCode());
+            sb.append(" -1 * " + stoich + " * " + reac.getId()+"_rate");
 
             if (reac.isReversible()) {
-                ModelicaCode rateInvFormula = (ModelicaCode)r.getRateInvFormula();
-                sb.append(" +1 * " + stoich + " * " + rateInvFormula.getCode());
+                sb.append(" +1 * " + stoich + " * " + reac.getId()+"_rateInv");
             }
         }
 
@@ -39,14 +35,10 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
             Reaction reac = l.getReaction();
             int stoich = l.getStoichiometry();
 
-            SimulableReaction r = this.getLinkSimulableSpeciesComprises().getSimulableModel().getSimulableReaction(reac.getId());
-
-            ModelicaCode rateFormula = (ModelicaCode)r.getRateFormula();
-            sb.append(" +1 * " + stoich + " * " + rateFormula.getCode());
+            sb.append(" +1 * " + stoich + " * " + reac.getId()+"_rate");
 
             if (reac.isReversible()) {
-                ModelicaCode rateInvFormula = (ModelicaCode)r.getRateInvFormula();
-                sb.append("-1 * " + stoich + " * " + rateInvFormula.getCode());
+                sb.append("-1 * " + stoich + " * " + "_rateInv");
             }
         }
 
