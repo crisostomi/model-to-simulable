@@ -86,16 +86,14 @@ public class ModelicaSimulableModel extends SimulableModel {
         StringBuilder declarations = new StringBuilder();
         StringBuilder initialEquation = new StringBuilder("\tinitial equation \n");
         StringBuilder equation = new StringBuilder("\tequation \n");
+        Set<Reaction> reactionsInvolvedInComp = new HashSet<>();
         for(LinkTypeSpeciesCompartment link: comp.getLinkSpeciesCompartmentSet()){
             Species species = link.getSpecies();
             String s_id = species.getId();
             SimulableSpecies simSpecies = this.getSimulableSpecies(s_id);
             if (simSpecies != null) {
 
-                Set<Reaction> reactions = simSpecies.getInvolvedReactions();
-                for (Reaction reaction: reactions){
-                    declarations.append("\tReal "+reaction.getId()+"_rate;\n");
-                }
+                reactionsInvolvedInComp.addAll(simSpecies.getInvolvedReactions());
 
                 declarations.append("\tReal "+s_id+";\n");
                 declarations.append("\tparameter Real "+s_id+"_init;\n");
@@ -107,9 +105,15 @@ public class ModelicaSimulableModel extends SimulableModel {
             }
 
         }
+        for (Reaction reaction: reactionsInvolvedInComp){
+            declarations.append("\tReal "+reaction.getId()+"_rate;\n");
+        }
+
         StringBuilder code = new StringBuilder();
         code.append("model "+comp.getId()+"\n\n");
+
         code.append(declarations + "\n\n");
+
         code.append(initialEquation + "\n\n");
         code.append(equation + "\n\n");
         code.append("end " + comp.getId() + ";\n\n");
