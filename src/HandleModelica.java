@@ -1,22 +1,14 @@
 import DataTypes.ModelicaCode;
-import DataTypes.Parameter;
 import Model.Model;
 import ModelicaSimulableModel.ModelicaSimulableModel;
 import SimulableModel.PreconditionsException;
 import Util.Parameter2XML;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-import javax.naming.ConfigurationException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 public class HandleModelica {
