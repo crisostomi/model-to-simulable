@@ -1,10 +1,13 @@
 package ModelicaSimulableModel;
 
 import DataTypes.ModelicaCode;
+import DataTypes.Parameter;
 import SimulableModel.*;
 import Model.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -100,16 +103,16 @@ public class ModelicaSimulableModel extends SimulableModel {
         return new ModelicaCode(code.toString());
     }
 
-    public ModelicaCode getParameters(){
-        StringBuilder parameters = new StringBuilder();
+    public List<Parameter> getParameters(){
+        List<Parameter> params = new ArrayList<>();
         for (LinkTypeSimulableSpeciesComprises link: this.getLinkSimulableSpeciesComprisesSet()){
             SimulableSpecies simSpecies = link.getSimulableSpecies();
-            parameters.append(simSpecies.getParameters() + "\n");
+            params.add(simSpecies.getParameters());
         }
         for (LinkTypeSimulableReactionComprises link: this.getLinkSimulableReactionComprisesSet()){
             SimulableReaction simReac = link.getSimulableReaction();
-            parameters.append(simReac.getParameters() + "\n");
+            params.add(simReac.getParameters());
         }
-        return new ModelicaCode(parameters.toString());
+        return params;
     }
 }

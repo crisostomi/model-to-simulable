@@ -1,6 +1,7 @@
 package ModelicaSimulableModel;
 
 import DataTypes.ModelicaCode;
+import DataTypes.Parameter;
 import Model.*;
 import SimulableModel.*;
 
@@ -51,22 +52,19 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
         return rhs;
     }
 
-    public String getParameters() {
-        StringBuilder sb = new StringBuilder();
+    public Parameter getParameters() {
+
+
         Species s = this.getSpeciesInstantiate();
+        String s_id = s.getId();
 
-        sb.append("<species ");
-        String sId = s.getId();
-        sb.append("id=\"" + sId + "\" ");
+        Parameter p = new Parameter("species", s_id);
+        Double min_ia = s.getInitialAmount().getLowerBound();
+        Double max_ia = s.getInitialAmount().getUpperBound();
 
-        Double minIa = s.getInitialAmount().getLowerBound();
-        Double maxIa = s.getInitialAmount().getUpperBound();
+        p.addProperty("minInitialAmount", min_ia.toString());
+        p.addProperty("maxInitialAmount", max_ia.toString());
 
-        sb.append("minInitialAmount=\"" + minIa + "\" ");
-        sb.append("maxInitialAmount=\"" + maxIa + "\"");
-
-        sb.append(">");
-
-        return sb.toString();
+        return p;
     }
 }

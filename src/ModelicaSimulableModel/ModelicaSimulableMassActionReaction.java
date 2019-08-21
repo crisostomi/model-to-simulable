@@ -1,6 +1,7 @@
 package ModelicaSimulableModel;
 
 import DataTypes.ModelicaCode;
+import DataTypes.Parameter;
 import Model.*;
 import SimulableModel.*;
 
@@ -44,30 +45,28 @@ public class ModelicaSimulableMassActionReaction extends ModelicaSimulableReacti
     }
 
     @Override
-    public String getParameters() {
-        StringBuilder parameters = new StringBuilder();
-        parameters.append("<reaction ");
+    public Parameter getParameters() {
         Reaction reaction = this.getReactionInstantiate();
         String r_id = reaction.getId();
-        double minRateConstant = reaction.getRate().getLowerBound();
-        double maxRateConstant = reaction.getRate().getUpperBound();
 
-        parameters.append("id=\""+r_id+"\" ");
-        parameters.append("minRateConstant=\"" + minRateConstant+"\" ");
-        parameters.append("maxRateConstant=\"" + maxRateConstant+"\"");
+        Parameter p = new Parameter("reaction", r_id);
+        Double minRateConstant = reaction.getRate().getLowerBound();
+        Double maxRateConstant = reaction.getRate().getUpperBound();
+
+        p.addProperty("minRateConstant", minRateConstant.toString());
+        p.addProperty("maxRateConstant", maxRateConstant.toString());
 
         if (reaction.isReversible()){
             try{
-                double minRateInvConstant = reaction.getRateInv().getLowerBound();
-                double maxRateInvConstant = reaction.getRateInv().getUpperBound();
-                parameters.append("minRateInvConstant=\""+minRateInvConstant+"\" ");
-                parameters.append("maxRateInvConstant=\""+maxRateInvConstant+"\"");
+                Double minRateInvConstant = reaction.getRateInv().getLowerBound();
+                Double maxRateInvConstant = reaction.getRateInv().getUpperBound();
+                p.addProperty("minRateInvConstant", minRateInvConstant.toString());
+                p.addProperty("maxRateInvConstant", maxRateInvConstant.toString());
             }
             catch (DataTypes.PreconditionsException e) {}
-
         }
-        parameters.append(">");
-        return parameters.toString();
+
+        return p;
     }
 
     @Override

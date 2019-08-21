@@ -1,6 +1,7 @@
 package SimulableModel;
 
 import DataTypes.Expression;
+import DataTypes.Parameter;
 import Model.Species;
 
 public abstract class SimulableSpecies {
@@ -38,5 +39,5 @@ public abstract class SimulableSpecies {
         linkSimulableSpeciesComprises = null;
     }
 
-    public abstract String getParameters();
+    public abstract Parameter getParameters();
 }
