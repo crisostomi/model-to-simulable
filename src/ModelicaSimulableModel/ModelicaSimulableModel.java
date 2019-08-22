@@ -131,7 +131,7 @@ public class ModelicaSimulableModel extends SimulableModel {
             if (simSpecies != null) {
 
                 String speciesVariable = simSpecies.getVariableName();
-                String line = "Real " + speciesVariable;
+                String line = "\tReal " + speciesVariable;
                 if (species.getName() != null){
                     line = line + " \"" + species.getName() + "\"";
                 }
@@ -155,7 +155,7 @@ public class ModelicaSimulableModel extends SimulableModel {
         for (ModelicaSimulableReaction reaction: reactionsInvolvedInComp) {
             Reaction r = reaction.getReactionInstantiate();
             String reactionRateVariable = reaction.getRateVariableName();
-            String line = "\t Real " + reactionRateVariable;
+            String line = "\tReal " + reactionRateVariable;
             if (r.getName() != null) {
                 line = line + " \"" + r.getName() + "\"";
             }
