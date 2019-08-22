@@ -10,30 +10,37 @@ import java.util.Set;
 public class Test {
 
     public static String getFileDifferences(String file1, String file2) throws IOException, InterruptedException {
-        String cmd = "diff "+file1+" "+file2;
-        Runtime run = Runtime.getRuntime();
-        Process pr = null;
-        pr = run.exec(cmd);
-        pr.waitFor();
-        BufferedReader buf = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+
+        String cmd = "diff " + file1 + " " + file2 + "";
+        Process process = Runtime.getRuntime().exec(cmd);
+        StringBuilder output = new StringBuilder();
+
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()));
+
         String line = "";
-        StringBuilder difference = new StringBuilder();
-        while ((line=buf.readLine())!=null) {
-            difference.append(line);
+        while ((line = reader.readLine()) != null) {
+            output.append(line+"\n");
         }
-        return difference.toString();
+
+//        StringBuilder errorString = new StringBuilder();
+//        BufferedReader errinput = new BufferedReader(new InputStreamReader(
+//                process.getErrorStream()));
+//        while ((line = errinput.readLine()) != null) {
+//            errorString.append(line + "\n");
+//        }
+        return output.toString();
     }
 
     public static Map<String, String> getDifferences(String out, String correctOut) throws IOException, InterruptedException {
-
         File dir = new File(out);
         File correctDir = new File(correctOut);
         File[] outDirListing = dir.listFiles();
         Map<String, String> differences = new HashMap<>();
         if (outDirListing != null) {
             for (File child : outDirListing) {
-                String difference = getFileDifferences(child.toString(), correctDir+"/"+child.toString());
-                if (difference != ""){
+                String difference = getFileDifferences(child.toString(), correctDir+"/"+child.getName());
+                if (!difference.equals("")){
                     differences.put(child.toString(), difference);
                 }
             }
