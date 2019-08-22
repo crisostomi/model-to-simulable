@@ -210,11 +210,11 @@ public class ModelicaSimulableModel extends SimulableModel {
 
     public List<Parameter> getParameters(){
         List<Parameter> params = new ArrayList<>();
-        for (LinkTypeSimulableSpeciesComprises link: this.getLinkSimulableSpeciesComprisesSet()){
+        for (LinkTypeSimulableSpeciesComprises link: this.getLinkSimulableSpeciesComprises()){
             SimulableSpecies simSpecies = link.getSimulableSpecies();
             params.add(simSpecies.getParameters());
         }
-        for (LinkTypeSimulableReactionComprises link: this.getLinkSimulableReactionComprisesSet()){
+        for (LinkTypeSimulableReactionComprises link: this.getLinkSimulableReactionComprises()){
             SimulableReaction simReac = link.getSimulableReaction();
             params.add(simReac.getParameters());
         }

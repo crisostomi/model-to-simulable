@@ -2,19 +2,19 @@ package SimulableModel;
 
 import Model.*;
 
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import DataTypes.Module;
 
 public abstract class SimulableModel {
 
     private final Model modelInstantiate;
-    private Set<LinkTypeSimulableReactionComprises> linkSimulableReactionComprisesSet = new HashSet<LinkTypeSimulableReactionComprises>();
-    private Set<LinkTypeSimulableSpeciesComprises> linkSimulableSpeciesComprisesSet = new HashSet<LinkTypeSimulableSpeciesComprises>();
+    private Map<String, LinkTypeSimulableReactionComprises> linkSimulableReactionComprisesMap = new HashMap<String, LinkTypeSimulableReactionComprises>();
+    private Map<String, LinkTypeSimulableSpeciesComprises> linkSimulableSpeciesComprisesMap = new HashMap<String, LinkTypeSimulableSpeciesComprises>();
 
 
-    public SimulableModel(Model model){
+    public SimulableModel(Model model) {
         this.modelInstantiate = model;
     }
 
@@ -25,7 +25,7 @@ public abstract class SimulableModel {
         if (pass == null)
             throw new PreconditionsException(
                     "It is necessary to show an instance of LinkComprises to invoke this method");
-        linkSimulableReactionComprisesSet.add(l);
+        linkSimulableReactionComprisesMap.put(l.getSimulableReaction().getReactionInstantiate().getId(), l);
     }
 
     public void removeLinkSimulableReactionComprises(LinkSimulableReactionComprises pass, LinkTypeSimulableReactionComprises l)
@@ -33,7 +33,7 @@ public abstract class SimulableModel {
         if (pass == null)
             throw new PreconditionsException(
                     "It is necessary to show an instance of LinkComprises to invoke this method");
-        linkSimulableReactionComprisesSet.remove(l);
+        linkSimulableReactionComprisesMap.remove(l.getSimulableReaction().getReactionInstantiate().getId());
     }
 
     public void insertLinkSimulableSpeciesComprises(LinkSimulableSpeciesComprises pass, LinkTypeSimulableSpeciesComprises l)
@@ -41,7 +41,7 @@ public abstract class SimulableModel {
         if (pass == null)
             throw new PreconditionsException(
                     "It is necessary to show an instance of LinkComprises to invoke this method");
-        linkSimulableSpeciesComprisesSet.add(l);
+        linkSimulableSpeciesComprisesMap.put(l.getSimulableSpecies().getSpeciesInstantiate().getId(), l);
     }
 
     public void removeLinkSimulableSpeciesComprises(LinkSimulableSpeciesComprises pass, LinkTypeSimulableSpeciesComprises l)
@@ -49,37 +49,33 @@ public abstract class SimulableModel {
         if (pass == null)
             throw new PreconditionsException(
                     "It is necessary to show an instance of LinkComprises to invoke this method");
-        linkSimulableSpeciesComprisesSet.remove(l);
+        linkSimulableSpeciesComprisesMap.remove(l.getSimulableSpecies().getSpeciesInstantiate().getId());
     }
 
     public Model getModelInstantiate() {
         return modelInstantiate;
     }
 
-    public Set<LinkTypeSimulableReactionComprises> getLinkSimulableReactionComprisesSet() {
-        return linkSimulableReactionComprisesSet;
+    public Collection<LinkTypeSimulableReactionComprises> getLinkSimulableReactionComprises() {
+        return linkSimulableReactionComprisesMap.values();
     }
 
-    public Set<LinkTypeSimulableSpeciesComprises> getLinkSimulableSpeciesComprisesSet() {
-        return linkSimulableSpeciesComprisesSet;
+    public Collection<LinkTypeSimulableSpeciesComprises> getLinkSimulableSpeciesComprises() {
+        return linkSimulableSpeciesComprisesMap.values();
     }
 
-    public SimulableSpecies getSimulableSpecies(String id){
-        for (LinkTypeSimulableSpeciesComprises l: this.linkSimulableSpeciesComprisesSet) {
-            SimulableSpecies ss = l.getSimulableSpecies();
-            if (ss.getSpeciesInstantiate().getId().equals(id)) {
-                return ss;
-            }
+    public SimulableSpecies getSimulableSpecies(String id) {
+        LinkTypeSimulableSpeciesComprises link = linkSimulableSpeciesComprisesMap.get(id);
+        if (link != null) {
+            return link.getSimulableSpecies();
         }
         return null;
     }
 
-    public SimulableReaction getSimulableReaction(String id){
-        for (LinkTypeSimulableReactionComprises l: this.linkSimulableReactionComprisesSet) {
-            SimulableReaction sr = l.getSimulableReaction();
-            if (sr.getReactionInstantiate().getId().equals(id)) {
-                return sr;
-            }
+    public SimulableReaction getSimulableReaction(String id) {
+        LinkTypeSimulableReactionComprises link = linkSimulableReactionComprisesMap.get(id);
+        if (link != null) {
+            return link.getSimulableReaction();
         }
         return null;
     }
