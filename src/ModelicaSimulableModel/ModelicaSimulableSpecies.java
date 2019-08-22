@@ -23,22 +23,27 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
         for (LinkTypeReactant l: s.getLinkReactantSet()) {
             Reaction reac = l.getReaction();
             int stoich = l.getStoichiometry();
+            ModelicaSimulableReaction sr =
+                    (ModelicaSimulableReaction) this.getLinkSimulableSpeciesComprises().getSimulableModel().getSimulableReaction(reac.getId());
 
-            sb.append(" -1 * " + stoich + " * " + reac.getId()+"_rate");
+            sb.append(" -1 * " + stoich + " * " + sr.getRateVariableName());
 
             if (reac.isReversible()) {
-                sb.append(" +1 * " + stoich + " * " + reac.getId()+"_rateInv");
+                sb.append(" +1 * " + stoich + " * " + sr.getRateInvVariableName());
             }
         }
 
         for (LinkTypeProduct l: s.getLinkProductSet()) {
             Reaction reac = l.getReaction();
             int stoich = l.getStoichiometry();
+            ModelicaSimulableReaction sr =
+                    (ModelicaSimulableReaction) this.getLinkSimulableSpeciesComprises().getSimulableModel().getSimulableReaction(reac.getId());
 
-            sb.append(" +1 * " + stoich + " * " + reac.getId()+"_rate");
+
+            sb.append(" +1 * " + stoich + " * " + sr.getRateVariableName());
 
             if (reac.isReversible()) {
-                sb.append("-1 * " + stoich + " * " + "_rateInv");
+                sb.append("-1 * " + stoich + " * " + sr.getRateInvVariableName());
             }
         }
 
@@ -63,17 +68,32 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
         return p;
     }
 
-    public Set<Reaction> getInvolvedReactions(){
-        Set<Reaction> reactions = new HashSet<>();
+    public Set<ModelicaSimulableReaction> getInvolvedReactions(){
+        Set<ModelicaSimulableReaction> reactions = new HashSet<>();
         for (LinkTypeReactant linkReactant:this.getSpeciesInstantiate().getLinkReactantSet()){
             Reaction reaction = linkReactant.getReaction();
-            reactions.add(reaction);
+
+            ModelicaSimulableReaction sr =
+                    (ModelicaSimulableReaction) this.getLinkSimulableSpeciesComprises().getSimulableModel().getSimulableReaction(reaction.getId());
+
+            reactions.add(sr);
         }
         for (LinkTypeProduct linkProduct:this.getSpeciesInstantiate().getLinkProductSet()){
             Reaction reaction = linkProduct.getReaction();
-            reactions.add(reaction);
+
+            ModelicaSimulableReaction sr =
+                    (ModelicaSimulableReaction) this.getLinkSimulableSpeciesComprises().getSimulableModel().getSimulableReaction(reaction.getId());
+
+            reactions.add(sr);
         }
         return reactions;
+    }
 
+    public String getVariableName() {
+        return this.getSpeciesInstantiate().getId();
+    }
+
+    public String getInitialAmountVariableName() {
+        return getVariableName() + "_init";
     }
 }

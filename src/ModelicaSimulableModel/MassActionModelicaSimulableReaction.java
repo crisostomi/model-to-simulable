@@ -13,8 +13,8 @@ import Model.Reaction;
 import Model.Species;
 
 
-public class ModelicaSimulableMassActionReaction extends ModelicaSimulableReaction{
-    public ModelicaSimulableMassActionReaction(Reaction reaction, SimulableModel model) throws PreconditionsException {
+public class MassActionModelicaSimulableReaction extends ModelicaSimulableReaction{
+    public MassActionModelicaSimulableReaction(Reaction reaction, SimulableModel model) throws PreconditionsException {
         super(reaction);
 
         Set<Species> speciesInvolved = new HashSet<>();
@@ -72,13 +72,16 @@ public class ModelicaSimulableMassActionReaction extends ModelicaSimulableReacti
     @Override
     public ModelicaCode getRateFormula() {
         Set<LinkTypeReactant> reactantLinks = this.getReactionInstantiate().getReactants();
-        String r_id = this.getReactionInstantiate().getId();
-        StringBuilder code = new StringBuilder(r_id+"_rateConstant");
+        StringBuilder code = new StringBuilder(""+this.getRateConstantVariableName());
         for (LinkTypeReactant link:reactantLinks){
             Species species = link.getSpecies();
             String s_id = species.getId();
+            ModelicaSimulableSpecies ss =
+                    (ModelicaSimulableSpecies)this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(s_id);
+
             int stoich = link.getStoichiometry();
-            code.append("*"+s_id+"^"+stoich);
+            String speciesVariable = ss.getVariableName();
+            code.append("*"+speciesVariable+"^"+stoich);
         }
         return new ModelicaCode(code.toString());
     }
@@ -86,13 +89,17 @@ public class ModelicaSimulableMassActionReaction extends ModelicaSimulableReacti
     @Override
     public ModelicaCode getRateInvFormula() {
         Set<LinkTypeProduct> productLinks = this.getReactionInstantiate().getProducts();
-        String r_id = this.getReactionInstantiate().getId();
-        StringBuilder code = new StringBuilder(r_id+"_rateInvConstant");
-        for (LinkTypeProduct link:productLinks){
+        StringBuilder code = new StringBuilder("" + this.getRateInvConstantVariableName());
+        for (LinkTypeProduct link : productLinks) {
             Species species = link.getSpecies();
             String s_id = species.getId();
+            ModelicaSimulableSpecies ss =
+                    (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(s_id);
+
             int stoich = link.getStoichiometry();
-            code.append("*"+s_id+"^"+stoich);
+            String speciesVariable = ss.getVariableName();
+            code.append("*" + speciesVariable + "^" + stoich);
+
         }
         return new ModelicaCode(code.toString());
     }

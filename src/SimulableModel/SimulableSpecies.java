@@ -44,6 +44,4 @@ public abstract class SimulableSpecies {
 
     public abstract Parameter getParameters();
 
-
-    public abstract Set<Reaction> getInvolvedReactions();
 }
