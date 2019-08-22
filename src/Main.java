@@ -16,7 +16,7 @@ public class Main {
         // String logPath = testFolder + "/out/log.txt";
         String dumpPath = testFolder + "/out/model_dump.json";
 
-        String outputFolder = testFolder+"/simulable output";
+        String outputFolder = testFolder+"/simulable-output";
 
         // CustomLogger.setup(logPath);
 
@@ -35,10 +35,10 @@ public class Main {
             // String modelPath = testFolder + "/out/model_dump.json";
             ModelicaSimulableModel msm = HandleModelica.buildSimulableModel(m);
             HandleModelica.buildModelica(msm, outputFolder);
-            String correctOut = testFolder+"/correct output";
+            String correctOut = testFolder+"/correct-output";
             Map<String, String> differences = Test.getDifferences(outputFolder,correctOut);
             for (Map.Entry<String, String> entry : differences.entrySet()) {
-                System.out.println(entry.getKey() + "/" + entry.getValue());
+                System.out.println(entry.getKey() + ":\n" + entry.getValue());
             }
 
         } catch (Exception e) {
