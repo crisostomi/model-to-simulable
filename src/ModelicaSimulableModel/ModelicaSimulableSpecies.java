@@ -1,7 +1,9 @@
 package ModelicaSimulableModel;
 
+import DataTypes.DefinedParameter;
 import DataTypes.ModelicaCode;
 import DataTypes.Parameter;
+import DataTypes.UndefinedParameter;
 import Model.*;
 import SimulableModel.*;
 
@@ -52,20 +54,15 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
         return rhs;
     }
 
-    public Parameter getParameters() {
-
-
+    public Parameter getParameter() {
         Species s = this.getSpeciesInstantiate();
-        String s_id = s.getId();
+        String parameterName = this.getInitialAmountVariableName();
 
-        Parameter p = new Parameter("species", s_id);
-        Double min_ia = s.getInitialAmount().getLowerBound();
-        Double max_ia = s.getInitialAmount().getUpperBound();
-
-        p.addProperty("minInitialAmount", min_ia.toString());
-        p.addProperty("maxInitialAmount", max_ia.toString());
-
-        return p;
+        if (s.getInitialAmount().getLowerBound() == s.getInitialAmount().getUpperBound()) {
+            return new DefinedParameter(parameterName, s.getInitialAmount().getLowerBound());
+        } else {
+            return new UndefinedParameter(parameterName, s.getInitialAmount().getLowerBound(), s.getInitialAmount().getUpperBound());
+        }
     }
 
     public Set<ModelicaSimulableReaction> getInvolvedReactions(){

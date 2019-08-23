@@ -1,6 +1,8 @@
 package Util;
 
+import DataTypes.DefinedParameter;
 import DataTypes.Parameter;
+import DataTypes.UndefinedParameter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -21,14 +23,14 @@ import java.util.Map;
 
 public class Parameter2XML {
 
-    public static void buildParametersXML(List<Parameter> params, String path)
+    public static void buildParametersXML(List<UndefinedParameter> params, String path)
             throws ParserConfigurationException,
                     TransformerException
     {
         writeDocument(buildParametersDocument(params), path);
     }
 
-    private static Document buildParametersDocument(List<Parameter> params)
+    private static Document buildParametersDocument(List<UndefinedParameter> params)
             throws ParserConfigurationException {
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -38,15 +40,11 @@ public class Parameter2XML {
         Node parameters = result.createElement("parameters");
         result.appendChild(parameters);
 
-        for (Parameter p: params) {
-            Element element = result.createElement(p.getEntity());
-            element.setAttribute("id", p.getId());
-            for (Map.Entry<String, String> entry: p.getProperties().entrySet()) {
-                String property = entry.getKey();
-                String value = entry.getValue();
-
-                element.setAttribute(property, value);
-            }
+        for (UndefinedParameter p: params) {
+            Element element = result.createElement("parameter");
+            element.setAttribute("name", p.getParameterName());
+            element.setAttribute("lowerBound", String.valueOf(p.getLowerBound()));
+            element.setAttribute("upperBound", String.valueOf(p.getUpperBound()));
 
             parameters.appendChild(element);
         }

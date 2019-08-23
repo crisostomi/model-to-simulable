@@ -1,5 +1,6 @@
 import Model.Model;
 import ModelicaSimulableModel.ModelicaSimulableModel;
+import Util.CustomLogger;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -10,14 +11,15 @@ public class Main {
         String projectFolder = "/home/scacio/Dropbox/Tesisti/software/development";
         String testFolder = projectFolder + "/test-cases/test-case-4";
 
-        String kbPath = testFolder + "/in/galactose.sbml";
-        String xmlPath = testFolder + "/in/quantitative.xml";
-        // String logPath = testFolder + "/out/log.txt";
-        // String dumpPath = testFolder + "/out/model_dump.json";
+        String inputFolder = testFolder + "/in";
+        String kbPath = inputFolder + "/galactose.sbml";
+        String xmlPath = inputFolder + "/quantitative.xml";
 
-        String outputFolder = testFolder+"/simulable-output";
+        String outputFolder = testFolder+"/out";
+        String logPath = outputFolder + "/log.txt";
+        String dumpPath = outputFolder + "/model_dump.xml";
 
-        // CustomLogger.setup(logPath);
+        CustomLogger.setup(logPath);
 
 
         try {
@@ -28,19 +30,13 @@ public class Main {
             Model m = HandleModel.createModel(kbPaths);
             // ConfigBuilder c = new ConfigBuilder(m, xmlPath);
             // c.buildConfig();
-            // m.dump(dumpPath);
+            m.dump(dumpPath);
 
-            // String modelPath = testFolder + "/out/model_dump.json";
-            ModelicaSimulableModel msm = HandleModelica.buildSimulableModel(m);
+            Model m_loaded = Model.load(dumpPath);
+            ModelicaSimulableModel msm = HandleModelica.buildSimulableModel(m_loaded);
             HandleModelica.buildModelica(msm, outputFolder);
 
             System.out.println("All done!");
-
-//            String correctOut = testFolder+"/correct-output";
-//            Map<String, String> differences = Test.getDifferences(outputFolder,correctOut);
-//            for (Map.Entry<String, String> entry : differences.entrySet()) {
-//                System.out.println(entry.getKey() + ":\n" + entry.getValue());
-//            }
 
         } catch (Exception e) {
             e.printStackTrace();

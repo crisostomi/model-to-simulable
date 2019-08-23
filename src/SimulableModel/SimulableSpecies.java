@@ -41,7 +41,4 @@ public abstract class SimulableSpecies {
                     "It is necessary to show an instance of LinkComprises to invoke this method");
         linkSimulableSpeciesComprises = null;
     }
-
-    public abstract Parameter getParameters();
-
 }

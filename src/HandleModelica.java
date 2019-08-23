@@ -31,10 +31,8 @@ public class HandleModelica {
             fw.close();
         }
 
-        Parameter2XML.buildParametersXML(m.getParameters(), outputFolder + "/parameters.xml");
+        Parameter2XML.buildParametersXML(m.getUndefinedParameters(), outputFolder + "/parameters.xml");
     }
-
-
 
     public static ModelicaSimulableModel loadModel(String modelPath) throws IOException, PreconditionsException {
         Model m = Model.load(modelPath);

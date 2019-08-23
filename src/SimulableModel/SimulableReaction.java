@@ -41,6 +41,4 @@ public abstract class SimulableReaction {
         linkSimulableReactionComprises = null;
     }
 
-    public abstract Parameter getParameters();
-
 }

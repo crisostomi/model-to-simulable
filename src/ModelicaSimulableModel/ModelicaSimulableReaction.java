@@ -1,7 +1,9 @@
 package ModelicaSimulableModel;
 
+import DataTypes.DefinedParameter;
 import DataTypes.ModelicaCode;
 import DataTypes.Parameter;
+import DataTypes.UndefinedParameter;
 import Model.Reaction;
 import SimulableModel.PreconditionsException;
 import SimulableModel.SimulableReaction;
@@ -11,8 +13,6 @@ public abstract class ModelicaSimulableReaction extends SimulableReaction {
     public ModelicaSimulableReaction(Reaction reaction) {
         super(reaction);
     }
-
-    public abstract Parameter getParameters();
 
     public abstract ModelicaCode getRateFormula();
 
@@ -36,6 +36,31 @@ public abstract class ModelicaSimulableReaction extends SimulableReaction {
         assert this.getReactionInstantiate().isReversible();
 
         return this.getReactionInstantiate().getId() + "_rateInvConstant";
+    }
+
+    public Parameter getParameter() {
+        String parameterName = this.getRateConstantVariableName();
+        Reaction r = this.getReactionInstantiate();
+
+        if (r.getRate().getLowerBound() == r.getRate().getUpperBound()) {
+            return new DefinedParameter(parameterName, r.getRate().getLowerBound());
+        } else {
+            return new UndefinedParameter(parameterName, r.getRate().getLowerBound(), r.getRate().getUpperBound());
+        }
+    }
+
+    public Parameter getInvParameter() {
+        Reaction r = this.getReactionInstantiate();
+        assert r.isReversible();
+
+        String parameterName = this.getRateInvConstantVariableName();
+        try {
+            if (r.getRateInv().getLowerBound() == r.getRateInv().getUpperBound()) {
+                return new DefinedParameter(parameterName, r.getRateInv().getLowerBound());
+            } else {
+                return new UndefinedParameter(parameterName, r.getRateInv().getLowerBound(), r.getRateInv().getUpperBound());
+            }
+        } catch (DataTypes.PreconditionsException e) {return null;}
     }
 
 }
