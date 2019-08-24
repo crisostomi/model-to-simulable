@@ -1,12 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" inherit-compiler-output="true">
-    <exclude-output />
+<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
+    <output url="file://$MODULE_DIR$/target/classes" />
+    <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.junit.jupiter:junit-jupiter-api:5.4.2" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apiguardian:apiguardian-api:1.0.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.opentest4j:opentest4j:1.1.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-commons:1.4.2" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.junit.jupiter:junit-jupiter-engine:5.4.2" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-engine:1.4.2" level="project" />
     <orderEntry type="module" module-name="knowledge-acquisition" />
+    <orderEntry type="library" name="Maven: com.thoughtworks.xstream:xstream:1.2.2" level="project" />
+    <orderEntry type="library" name="Maven: xpp3:xpp3_min:1.1.3.4.O" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml:jsbml:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml:jsbml-core:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-core:2.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-api:2.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-1.2-api:2.3" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.woodstox:woodstox-core:5.0.1" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.woodstox:stax2-api:3.1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.w3c.jigsaw:jigsaw:2.2.6" level="project" />
+    <orderEntry type="library" name="Maven: org.biojava:biojava-ontology:4.0.0" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.10" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.logging.log4j:log4j-slf4j-impl:2.1" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.staxmate:staxmate:2.3.0" level="project" />
+    <orderEntry type="library" name="Maven: com.googlecode.json-simple:json-simple:1.1.1" level="project" />
+    <orderEntry type="library" name="Maven: junit:junit:4.10" level="project" />
+    <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-arrays:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-comp:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-distrib:1.3.1" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-dyn:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-fbc:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-groups:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-layout:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-multi:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-qual:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-render:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-req:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-spatial:1.4" level="project" />
+    <orderEntry type="library" name="Maven: org.sbml.jsbml.modules:jsbml-tidy:1.4" level="project" />
+    <orderEntry type="library" name="Maven: net.sf.jtidy:jtidy:r938" level="project" />
   </component>
 </module>

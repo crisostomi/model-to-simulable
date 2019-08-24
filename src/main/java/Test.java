@@ -23,12 +23,6 @@ public class Test {
             output.append(line+"\n");
         }
 
-//        StringBuilder errorString = new StringBuilder();
-//        BufferedReader errinput = new BufferedReader(new InputStreamReader(
-//                process.getErrorStream()));
-//        while ((line = errinput.readLine()) != null) {
-//            errorString.append(line + "\n");
-//        }
         return output.toString();
     }
 
