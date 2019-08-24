@@ -51,8 +51,10 @@ public class ModelicaSimulableModel extends SimulableModel {
 
     private ModelicaCode getReactionsCode() {
         StringBuilder parameters = new StringBuilder();
-        StringBuilder declarations = new StringBuilder();
+        StringBuilder reacDeclarations = new StringBuilder();
+        StringBuilder speciesDeclarations = new StringBuilder();
         StringBuilder equation = new StringBuilder("\tequation\n");
+
         for (LinkTypeComprises link:this.getModelInstantiate().getLinkComprisesSet()){
             BiologicalEntity bioEntity = link.getBiologicalEntity();
             if (bioEntity instanceof Reaction){
@@ -66,7 +68,7 @@ public class ModelicaSimulableModel extends SimulableModel {
                 if (reaction.getName() != null) {
                     line = line + " \"" + reaction.getName() + "\"";
                 }
-                declarations.append(line + ";\n");
+                reacDeclarations.append(line + ";\n");
 
                 String reactionRateConstantVariable = simReaction.getRateConstantVariableName();
                 parameters.append("\tReal " + reactionRateConstantVariable + ";\n");
@@ -84,7 +86,7 @@ public class ModelicaSimulableModel extends SimulableModel {
                     if (species.getName() != null) {
                         line = line + " \"" + species.getName() + "\"";
                     }
-                    declarations.append(line+";\n");
+                    speciesDeclarations.append(line+";\n");
                 }
 
                 if (reaction.isReversible()){
@@ -106,7 +108,7 @@ public class ModelicaSimulableModel extends SimulableModel {
                         if (species.getName() != null) {
                             line = line + " \"" + species.getName() + "\"";
                         }
-                        declarations.append(line+";\n");
+                        speciesDeclarations.append(line+";\n");
                     }
                 }
             }
@@ -115,7 +117,8 @@ public class ModelicaSimulableModel extends SimulableModel {
 
         StringBuilder code = new StringBuilder("model Reactions\n");
         code.append(parameters + "\n");
-        code.append(declarations + "\n\n");
+        code.append(speciesDeclarations + "\n");
+        code.append(reacDeclarations + "\n");
         code.append(equation + "\n\n");
         code.append("end Reactions;\n");
         return new ModelicaCode(code.toString());

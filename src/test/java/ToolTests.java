@@ -3,96 +3,90 @@ import Model.Model;
 import ModelicaSimulableModel.ModelicaSimulableModel;
 import Parser.ConfigBuilder;
 import Parser.FormatNotSupportedException;
-import Util.CustomLogger;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ToolTests {
     @Test
     public void toolChain_dummyPathway_generateCorrectModelica() throws SAXException, PreconditionsException, IOException, XMLStreamException, ParserConfigurationException, FormatNotSupportedException, SimulableModel.PreconditionsException, TransformerException, InterruptedException {
-//        String projectFolder = "/home/don/Dropbox/Tesisti/software/development";
-//        String testFolder = projectFolder + "/test-cases/dummy";
-//
-//        String inputFolder = testFolder + "/in";
-//        String kbPath = inputFolder + "/dummyPathway.sbml";
-//
-//        String outputFolder = testFolder + "/out";
-//        String dumpPath = outputFolder + "/model_dump.xml";
-//        String xmlPath = inputFolder + "/quantitative.xml";
-//
-//        String generatedPath = outputFolder+"/generated";
-//        String correctPath = outputFolder+"/correct";
-//
-//        Set<String> kbPaths = new HashSet<>();
-//        kbPaths.add(kbPath);
-//
-//        Model m = HandleModel.createModel(kbPaths);
-//        ConfigBuilder c = new ConfigBuilder(m, xmlPath);
-//        c.buildConfig();
-//        m.dump(dumpPath);
-//
-//        Model m_loaded = Model.load(dumpPath);
-//        ModelicaSimulableModel msm = HandleModelica.buildSimulableModel(m_loaded);
-//        HandleModelica.buildModelica(msm, generatedPath);
-//        System.out.println(getDifferences(generatedPath, correctPath));
-        assertTrue(true);
+        String projectFolder = "/home/don/Dropbox/Tesisti/software/development";
+        String testFolder = projectFolder + "/test-cases/dummy";
+
+        String inputFolder = testFolder + "/in";
+        String kbPath = inputFolder + "/dummyPathway.sbml";
+
+        String outputFolder = testFolder + "/out";
+        String dumpPath = outputFolder + "/model_dump.xml";
+        String xmlPath = inputFolder + "/quantitative.xml";
+
+        String generatedPath = outputFolder+"/generated";
+        String correctPath = outputFolder+"/correct";
+
+        Set<String> kbPaths = new HashSet<>();
+        kbPaths.add(kbPath);
+
+        Model m = HandleModel.createModel(kbPaths);
+        ConfigBuilder c = new ConfigBuilder(m, xmlPath);
+        c.buildConfig();
+        m.dump(dumpPath);
+
+        Model m_loaded = Model.load(dumpPath);
+        ModelicaSimulableModel msm = HandleModelica.buildSimulableModel(m_loaded);
+        HandleModelica.buildModelica(msm, generatedPath);
+        Set<String> changedFiles = getChangedFiles(generatedPath, correctPath);
+        assertTrue(changedFiles.isEmpty(),"The following files have changed: "+changedFiles.toString() );
 
     }
 
-//    public static String getFileDifferences(File file1, File file2) throws IOException, InterruptedException {
-//        File sorted1StFile = new File(file1.getParentFile()+"/sorted"+file1.getName());
-//        File sorted2ndFile = new File(file2.getParentFile()+"/sorted"+file2.getName());
-//        System.out.println(sorted1StFile.createNewFile());
-//        System.out.println(sorted2ndFile.createNewFile());
-//        String sort1Cmd = "sort "+ file1.toString()+" > "+ sorted1StFile.toString();
-//        String sort2Cmd = "sort "+ file2.toString()+" > "+ sorted2ndFile.toString();
-//        Process sort1Proc = Runtime.getRuntime().exec(sort1Cmd);
-//
-//        Process sort2Proc = Runtime.getRuntime().exec(sort2Cmd);
-//
-//        String cmd = "diff " +sorted1StFile.toString() + " " + sorted2ndFile.toString() + "";
-//        Process process = Runtime.getRuntime().exec(cmd);
-//        StringBuilder output = new StringBuilder();
-//
-//        BufferedReader reader = new BufferedReader(
-//                new InputStreamReader(sort1Proc.getErrorStream()));
-//
-//        String line = "";
-//        while ((line = reader.readLine()) != null) {
-//            output.append(line+"\n");
-//        }
-//
-//        return output.toString();
-//    }
-//
-//    public static Map<String, String> getDifferences(String out, String correctOut) throws IOException, InterruptedException {
-//        File dir = new File(out);
-//        File correctDir = new File(correctOut);
-//        File[] outDirListing = dir.listFiles();
-//        Map<String, String> differences = new HashMap<>();
-//        if (outDirListing != null) {
-//            for (File child : outDirListing) {
-//                String difference = getFileDifferences(child, new File(correctDir+"/"+child.getName()));
-//                if (!difference.equals("")){
-//                    differences.put(child.toString(), difference);
-//                }
-//            }
-//        }
-//        return differences;
-//    }
+    public static boolean getFileDifferences(File file1, File file2) throws IOException, InterruptedException {
+        String file1content = fileToString(file1);
+        String file2content = fileToString(file2);
+        String sortedFile1content = sortString(file1content);
+        String sortedFile2content = sortString(file2content);
+        return !sortedFile1content.equals(sortedFile2content);
+
+    }
+
+    public static String fileToString(File file) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(file.toString()));
+        StringBuilder builder = new StringBuilder();
+        String currentLine = reader.readLine();
+        while (currentLine != null) {
+            builder.append(currentLine);
+            builder.append("n");
+            currentLine = reader.readLine();
+        }
+        return builder.toString();
+    }
+
+    public static String sortString(String inputString) {
+        char tempArray[] = inputString.toCharArray();
+        Arrays.sort(tempArray);
+        return new String(tempArray);
+    }
+
+    public static Set<String> getChangedFiles(String out, String correctOut) throws IOException, InterruptedException {
+        File dir = new File(out);
+        File correctDir = new File(correctOut);
+        File[] outDirListing = dir.listFiles();
+        Set<String> differences = new HashSet<>();
+        if (outDirListing != null) {
+            for (File child : outDirListing) {
+                boolean difference = getFileDifferences(child, new File(correctDir+"/"+child.getName()));
+                if (difference){
+                    differences.add(child.toString());
+                }
+            }
+        }
+        return differences;
+    }
 }
 
