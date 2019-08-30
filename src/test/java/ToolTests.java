@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ToolTests {
     @Test
     public void toolChain_dummyPathway_generateCorrectModelica() throws SAXException, PreconditionsException, IOException, XMLStreamException, ParserConfigurationException, FormatNotSupportedException, SimulableModel.PreconditionsException, TransformerException, InterruptedException {
-        String projectFolder = "/home/don/Dropbox/Tesisti/software/development";
+        String projectFolder = "/home/scacio/Dropbox/Tesisti/software/development";
         String testFolder = projectFolder + "/test-cases/dummy";
 
         String inputFolder = testFolder + "/in";
