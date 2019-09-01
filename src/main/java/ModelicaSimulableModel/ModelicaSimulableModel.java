@@ -74,7 +74,7 @@ public class ModelicaSimulableModel extends SimulableModel {
                 parameters.append("\tReal " + reactionRateConstantVariable + ";\n");
 
                 String rateFormula = simReaction.getRateFormula().getCode();
-                equation.append("\t\t"+ reactionRateConstantVariable + " = " + rateFormula + ";\n");
+                equation.append("\t\t"+ reactionRateVariable + " = " + rateFormula + ";\n");
 
                 for (LinkTypeReactant linkReactant: reaction.getReactants()){
                     Species species = linkReactant.getSpecies();
