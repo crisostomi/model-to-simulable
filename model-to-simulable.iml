@@ -49,5 +49,6 @@
     <orderEntry type="library" name="Maven: org.sbml.jsbml.ext:jsbml-spatial:1.4" level="project" />
     <orderEntry type="library" name="Maven: org.sbml.jsbml.modules:jsbml-tidy:1.4" level="project" />
     <orderEntry type="library" name="Maven: net.sf.jtidy:jtidy:r938" level="project" />
+    <orderEntry type="library" name="Maven: com.univocity:univocity-parsers:2.1.1" level="project" />
   </component>
 </module>
