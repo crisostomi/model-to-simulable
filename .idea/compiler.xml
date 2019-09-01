@@ -11,8 +11,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="knowledge-acquisition" target="11" />
-      <module name="model-to-simulable" target="11" />
+      <module name="knowledge-acquisition" target="8" />
+      <module name="model-to-simulable" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>
