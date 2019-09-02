@@ -93,4 +93,8 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
     public String getInitialAmountVariableName() {
         return getVariableName() + "_init";
     }
+
+    public String getAverageVariableName() {
+        return getVariableName() + "_average";
+    }
 }

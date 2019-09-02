@@ -21,13 +21,40 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-public class Parameter2XML {
+public class XMLHandler {
 
     public static void buildParametersXML(List<UndefinedParameter> params, String path)
             throws ParserConfigurationException,
                     TransformerException
     {
         writeDocument(buildParametersDocument(params), path);
+    }
+
+    public static void buildProteinConstraintsXML(Map<String, Double> abundances, String path)
+            throws ParserConfigurationException, TransformerException
+    {
+        writeDocument(buildProteinConstraintsDocument(abundances), path);
+    }
+
+    private static Document buildProteinConstraintsDocument(Map<String, Double> abundances) throws ParserConfigurationException {
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document result = dBuilder.newDocument();
+
+        Node constraints = result.createElement("constraints");
+        result.appendChild(constraints);
+
+        for (Map.Entry<String, Double> ab: abundances.entrySet()) {
+            String variableName = ab.getKey();
+            double abundance = ab.getValue();
+            Element element = result.createElement("protein");
+            element.setAttribute("name", variableName);
+            element.setAttribute("abundance", String.valueOf(abundance));
+
+            constraints.appendChild(element);
+        }
+
+        return result;
     }
 
     private static Document buildParametersDocument(List<UndefinedParameter> params)
