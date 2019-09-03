@@ -84,6 +84,8 @@ public class ModelicaSimulableModel extends SimulableModel {
                       String reactionRateKcat = ((MichaelisMentenModelicaSimulableReaction) simReaction).getCatalystConstantName();
                       line += "\tReal " + reactionRateKcat;
                       reacDeclarations.append(line + ";"+"\n");
+                    speciesDeclarations.append(getReactantsAndModifiersNeededForRate(reaction));
+
                 }
                 else {
                     String reactionRateConstantVariable =( (MassActionModelicaSimulableReaction) simReaction).getRateConstantVariableName();
@@ -121,6 +123,33 @@ public class ModelicaSimulableModel extends SimulableModel {
         String line = "";
         for (LinkTypeReactant linkReactant: reaction.getReactants()){
             Species species = linkReactant.getSpecies();
+            String speciesVariable =
+                    ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
+
+            line += "\tReal "+speciesVariable;
+            if (species.getName() != null) {
+                line = line + " \"" + species.getName() + "\"";
+            }
+            line += ";\n";
+        }
+        return line;
+    }
+
+    private String getReactantsAndModifiersNeededForRate(Reaction reaction){
+        String line = "";
+        for (LinkTypeReactant linkReactant: reaction.getReactants()){
+            Species species = linkReactant.getSpecies();
+            String speciesVariable =
+                    ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
+
+            line += "\tReal "+speciesVariable;
+            if (species.getName() != null) {
+                line = line + " \"" + species.getName() + "\"";
+            }
+            line += ";\n";
+        }
+        for (LinkTypeModifier linkModifier: reaction.getModifiers()){
+            Species species = linkModifier.getSpecies();
             String speciesVariable =
                     ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
 
@@ -417,6 +446,7 @@ public class ModelicaSimulableModel extends SimulableModel {
         }
         StringBuilder code = new StringBuilder("model Parameters\n");
         code.append(declarations + "\n");
+        code.append("\tparameter Real simulation_time;\n");
         code.append("end Parameters;\n");
         return new ModelicaCode(code.toString());
     }
@@ -441,20 +471,23 @@ public class ModelicaSimulableModel extends SimulableModel {
         if (reaction.isComplex()) {
 
             String michaelisConstantName = ((MichaelisMentenModelicaSimulableReaction) simulableReaction).getMichaelisConstantName();
-            String line = "parameter Real " + michaelisConstantName+";\n";
+            String line = "\tparameter Real " + michaelisConstantName;
             ModelicaParameter Km = ((MichaelisMentenModelicaSimulableReaction) simulableReaction).getMichaelisParameter();
             if (Km instanceof DefinedModelicaParameter) {
-                line = line + " = " + ((DefinedModelicaParameter) Km).getValue();
+                line += " = " + ((DefinedModelicaParameter) Km).getValue();
             }
+            line += ";\n";
 
             String catalystConstantName = ((MichaelisMentenModelicaSimulableReaction) simulableReaction).getCatalystConstantName();
             line += "\tparameter Real " + catalystConstantName;
             ModelicaParameter Kcat = ((MichaelisMentenModelicaSimulableReaction) simulableReaction).getCatalystParameter();
             if (Kcat instanceof DefinedModelicaParameter) {
-                line = line + " = " + ((DefinedModelicaParameter) Kcat).getValue();
+                line += " = " + ((DefinedModelicaParameter) Kcat).getValue();
             }
+            line += ";\n";
 
-            declarations.append("\t"+line+";\n");
+
+            declarations.append(line);
         } else {
             String rateConstantVariable = ((MassActionModelicaSimulableReaction) simulableReaction).getRateConstantVariableName();
             String line = "parameter Real " + rateConstantVariable;
