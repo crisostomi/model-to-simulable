@@ -83,7 +83,16 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
 
             reactions.add(sr);
         }
+        for (LinkTypeModifier linkModifier:this.getSpeciesInstantiate().getLinkModifierSet()){
+            Reaction reaction = linkModifier.getReaction();
+
+            ModelicaSimulableReaction sr =
+                    (ModelicaSimulableReaction) this.getLinkSimulableSpeciesComprises().getSimulableModel().getSimulableReaction(reaction.getId());
+
+            reactions.add(sr);
+        }
         return reactions;
+
     }
 
     public String getVariableName() {

@@ -17,11 +17,12 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ToolTests {
     @Test
     public void toolChain_dummyPathway_generateCorrectModelica() throws SAXException, PreconditionsException, IOException, XMLStreamException, ParserConfigurationException, FormatNotSupportedException, SimulableModel.PreconditionsException, TransformerException, InterruptedException {
-        String projectFolder = "/home/don/Dropbox/Tesisti/software";
+        String username = System.getProperty("user.name");
+        String projectFolder = "/home/"+username+"/Dropbox/Tesisti/software";
         String testFolder = projectFolder + "/test-cases/dummy";
 
         String inputFolder = testFolder + "/in";
-        String kbPath = inputFolder + "/dummyPathway.sbml";
+        String kbPath = inputFolder + "/pathway.sbml";
 
         String outputFolder = testFolder + "/out";
         String dumpPath = outputFolder + "/model_dump.xml";

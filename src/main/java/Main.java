@@ -7,16 +7,21 @@ import java.util.Map;
 import java.util.Set;
 
 public class Main {
-    public static void main(String[] args) {
-        // TODO: fix linking of enzymes between reactions and system.
-        String projectFolder = "/home/don/Dropbox/Tesisti/software";
-        String testFolder = projectFolder + "/test-cases/dummy";
+    public static final String ABUNDANCES_FILENAME = "abundances.tsv";
+    public static final String REACTOME_FILENAME = "pathway.sbml";
+    public static final String LOG_FILENAME = "log.txt";
 
-        String kbPath = testFolder + "/in/dummyPathway.sbml";
-//        String xmlPath = testFolder + "/in/quantitative.xml";
-//        String tsvPath = testFolder + "/in/abundances.tsv";
-        String logPath = testFolder + "/out/log.txt";
+    public static void main(String[] args) {
+
+        String username = System.getProperty("user.name");
+        String projectFolder = "/home/"+username+"/Dropbox/Tesisti/software";
+
+        String testFolder = projectFolder + "/test-cases/urea/";
+        String kbPath = testFolder + "/in/"+REACTOME_FILENAME;
+        String tsvPath = testFolder +"/in/"+ ABUNDANCES_FILENAME;
+        String logPath = testFolder + LOG_FILENAME;
         String dumpPath = testFolder + "/out/model_dump.xml";
+//        String xmlPath = testFolder + "/in/quantitative.xml";
 
         CustomLogger.setup(logPath);
 
@@ -24,7 +29,7 @@ public class Main {
             Set<String> kbPaths = new HashSet<>();
             kbPaths.add(kbPath);
             // kbPaths.add(xmlPath);
-//            kbPaths.add(tsvPath);
+            kbPaths.add(tsvPath);
 
             Model m = HandleModel.createModel(kbPaths);
             // ConfigBuilder c = new ConfigBuilder(m, xmlPath);

@@ -13,24 +13,20 @@ public class ModelicaSimulableModel extends SimulableModel {
 
     public ModelicaSimulableModel(Model model) throws PreconditionsException{
         super(model);
-        for (LinkTypeComprises linkModelBioEntity: model.getLinkComprisesSet()){
-            BiologicalEntity bioEntity = linkModelBioEntity.getBiologicalEntity();
-            if (bioEntity instanceof Compartment){
-                Compartment comp = (Compartment) bioEntity;
-                for (LinkTypeReactionCompartment linkReacComp: comp.getLinkReactionCompartmentSet()){
-                    Reaction reaction = linkReacComp.getReaction();
+        for (Compartment compartment: model.getCompartments()){
 
-                    if (!reaction.getReactants().isEmpty() || !reaction.getProducts().isEmpty()) {
-                        ModelicaSimulableReaction simulableReaction;
-                        if (reaction.isComplex()){
-                            simulableReaction = new MichaelisMentenModelicaSimulableReaction(reaction, this);
-                        }
-                        else {
-                            simulableReaction = new MassActionModelicaSimulableReaction(reaction, this);
-
-                        }
-                        LinkSimulableReactionComprises.insertLink(this, simulableReaction);
+            for (LinkTypeReactionCompartment linkReacComp: compartment.getLinkReactionCompartmentSet()){
+                Reaction reaction = linkReacComp.getReaction();
+                if (!reaction.getReactants().isEmpty() || !reaction.getProducts().isEmpty()) {
+                    ModelicaSimulableReaction simulableReaction;
+                    if (reaction.isComplex()){
+                        simulableReaction = new MichaelisMentenModelicaSimulableReaction(reaction, this);
                     }
+                    else {
+                        simulableReaction = new MassActionModelicaSimulableReaction(reaction, this);
+
+                    }
+                    LinkSimulableReactionComprises.insertLink(this, simulableReaction);
                 }
             }
         }
@@ -40,18 +36,16 @@ public class ModelicaSimulableModel extends SimulableModel {
     public Map<String, ModelicaCode> getModules() {
         HashMap<String, ModelicaCode> map = new HashMap<>();
 
-        for (LinkTypeComprises link: this.getModelInstantiate().getLinkComprisesSet()){
-            BiologicalEntity bioEntity = link.getBiologicalEntity();
-            if (bioEntity instanceof Compartment){
-                Compartment comp = (Compartment) bioEntity;
-                String fileName = this.getModuleName(comp);
-                map.put(fileName,getModuleCode(comp));
-            }
+        for (Compartment compartment: this.getModelInstantiate().getCompartments()){
+            String fileName = this.getModuleName(compartment);
+            map.put(fileName,getModuleCode(compartment));
         }
+
         map.put("Parameters", getParametersCode());
         map.put("Monitor", getMonitorCode());
         map.put("Reactions", getReactionsCode());
         map.put("System", getLinkingModule());
+
         return map;
     }
 
@@ -61,52 +55,48 @@ public class ModelicaSimulableModel extends SimulableModel {
         StringBuilder speciesDeclarations = new StringBuilder();
         StringBuilder equation = new StringBuilder("\tequation\n");
 
-        for (LinkTypeComprises link:this.getModelInstantiate().getLinkComprisesSet()){
-            BiologicalEntity bioEntity = link.getBiologicalEntity();
-            if (bioEntity instanceof Reaction){
-                Reaction reaction = (Reaction) bioEntity;
-                String r_id = reaction.getId();
-                ModelicaSimulableReaction simReaction =
-                        (ModelicaSimulableReaction) this.getSimulableReaction(r_id);
+        for (Reaction reaction:this.getModelInstantiate().getReactions()){
+            String r_id = reaction.getId();
+            ModelicaSimulableReaction simReaction =
+                    (ModelicaSimulableReaction) this.getSimulableReaction(r_id);
 
-                String reactionRateVariable = simReaction.getRateVariableName();
-                String line = "\tReal " + reactionRateVariable;
-                if (reaction.getName() != null) {
-                    line = line + " \"" + reaction.getName() + "\"";
-                }
-                reacDeclarations.append(line + ";\n");
-                String rateFormula = simReaction.getRateFormula().getCode();
-                equation.append("\t\t"+ reactionRateVariable + " = " + rateFormula + ";\n");
+            String reactionRateVariable = simReaction.getRateVariableName();
+            String line = "\tReal " + reactionRateVariable;
+            if (reaction.getName() != null) {
+                line = line + " \"" + reaction.getName() + "\"";
+            }
+            reacDeclarations.append(line + ";\n");
+            String rateFormula = simReaction.getRateFormula().getCode();
+            equation.append("\t\t"+ reactionRateVariable + " = " + rateFormula + ";\n");
 
-                if ( reaction.isComplex() ){
-                      String reactionRateKm = ((MichaelisMentenModelicaSimulableReaction) simReaction).getMichaelisConstantName();
-                      line = "\tReal " + reactionRateKm+";\n";
-                      String reactionRateKcat = ((MichaelisMentenModelicaSimulableReaction) simReaction).getCatalystConstantName();
-                      line += "\tReal " + reactionRateKcat;
-                      reacDeclarations.append(line + ";"+"\n");
-                    speciesDeclarations.append(getReactantsAndModifiersNeededForRate(reaction));
+            if ( reaction.isComplex() ){
+                  String reactionRateKm = ((MichaelisMentenModelicaSimulableReaction) simReaction).getMichaelisConstantName();
+                  line = "\tReal " + reactionRateKm+";\n";
+                  String reactionRateKcat = ((MichaelisMentenModelicaSimulableReaction) simReaction).getCatalystConstantName();
+                  line += "\tReal " + reactionRateKcat;
+                  reacDeclarations.append(line + ";"+"\n");
+                speciesDeclarations.append(getReactantsAndModifiersNeededForRate(reaction));
 
+            }
+            else {
+                String reactionRateConstantVariable =( (MassActionModelicaSimulableReaction) simReaction).getRateConstantVariableName();
+                parameters.append("\tReal " + reactionRateConstantVariable + ";\n");
+                speciesDeclarations.append(getReactantsNeededForRate(reaction));
+            }
+
+            if (reaction.isReversible()){
+                if (reaction.isComplex()){
+                    // complex reversible code
                 }
                 else {
-                    String reactionRateConstantVariable =( (MassActionModelicaSimulableReaction) simReaction).getRateConstantVariableName();
-                    parameters.append("\tReal " + reactionRateConstantVariable + ";\n");
-                    speciesDeclarations.append(getReactantsNeededForRate(reaction));
+                    String reactionRateInvConstantVariable = ((MassActionModelicaSimulableReaction) simReaction).getRateInvConstantVariableName();
+                    parameters.append("\tparameter Real " + reactionRateInvConstantVariable + ";\n");
+                    speciesDeclarations.append(getProductsNeededForRate(reaction));
                 }
 
-                if (reaction.isReversible()){
-                    if (reaction.isComplex()){
-                        // complex reversible code
-                    }
-                    else {
-                        String reactionRateInvConstantVariable = ((MassActionModelicaSimulableReaction) simReaction).getRateInvConstantVariableName();
-                        parameters.append("\tparameter Real " + reactionRateInvConstantVariable + ";\n");
-                        speciesDeclarations.append(getProductsNeededForRate(reaction));
-                    }
-
-                    String reactionRateInvVariable = simReaction.getRateInvVariableName();
-                    String rateInvFormula = simReaction.getRateInvFormula().getCode();
-                    equation.append("\t\t"+ reactionRateInvVariable + " = " + rateInvFormula + ";\n");
-                }
+                String reactionRateInvVariable = simReaction.getRateInvVariableName();
+                String rateInvFormula = simReaction.getRateInvFormula().getCode();
+                equation.append("\t\t"+ reactionRateInvVariable + " = " + rateInvFormula + ";\n");
             }
         }
 
@@ -243,64 +233,64 @@ public class ModelicaSimulableModel extends SimulableModel {
 
         StringBuilder declarations = new StringBuilder();
         StringBuilder equations = new StringBuilder("\tequation\n");
+        declarations.append("\tReactions reactions;\n");
+        declarations.append("\tParameters parameters;\n");
+        declarations.append("\tMonitor monitor;\n");
+
 
         // code for linking species variables
-        for (LinkTypeComprises link: this.getModelInstantiate().getLinkComprisesSet()) {
-            BiologicalEntity be = link.getBiologicalEntity();
-            if (be instanceof Compartment) {
-                Compartment comp = (Compartment) be;
-                Set<ModelicaSimulableReaction> reactionsInvolvedInComp = new HashSet<>();
-                String className = comp.getId().substring(0, 1).toUpperCase() + comp.getId().substring(1);
-                declarations.append("\t" + className + " " + comp.getId() + ";\n");
+        for (Compartment compartment: this.getModelInstantiate().getCompartments()) {
+            String className = compartment.getId().substring(0, 1).toUpperCase() + compartment.getId().substring(1);
+            declarations.append("\t" + className + " " + compartment.getId() + ";\n");
 
-                for (LinkTypeSpeciesCompartment linkSpecies: comp.getLinkSpeciesCompartmentSet()) {
-                    Species species = linkSpecies.getSpecies();
-                    String s_id = species.getId();
-                    ModelicaSimulableSpecies ss =
-                            (ModelicaSimulableSpecies)this.getSimulableSpecies(s_id);
+            Set<ModelicaSimulableReaction> reactionsInvolvedInComp = new HashSet<>();
 
-                    if (ss != null) {
-                        Set<ModelicaSimulableReaction> reactions = ss.getInvolvedReactions();
-                        reactionsInvolvedInComp.addAll(reactions);
-                    }
+            for (LinkTypeSpeciesCompartment linkSpecies: compartment.getLinkSpeciesCompartmentSet()) {
+                Species species = linkSpecies.getSpecies();
+                String s_id = species.getId();
+                ModelicaSimulableSpecies simulableSpecies = (ModelicaSimulableSpecies)this.getSimulableSpecies(s_id);
+
+                if (simulableSpecies != null) {
+                    Set<ModelicaSimulableReaction> reactions = simulableSpecies.getInvolvedReactions();
+                    reactionsInvolvedInComp.addAll(reactions);
                 }
+            }
 
-                for (ModelicaSimulableReaction r: reactionsInvolvedInComp) {
-                    equations.append(
-                            "\t\t"+
-                            comp.getId() + "." + r.getRateVariableName() +
-                            " = " +
-                            "reactions" + "." + r.getRateVariableName() +
-                            ";\n"
-                    );
-                }
+            for (ModelicaSimulableReaction r: reactionsInvolvedInComp) {
+                equations.append(
+                        "\t\t"+
+                                compartment.getId() + "." + r.getRateVariableName() +
+                        " = " +
+                        "reactions" + "." + r.getRateVariableName() +
+                        ";\n"
+                );
             }
         }
 
         // code for linking reaction variables
-        declarations.append("\tReactions reactions;\n");
         Set<ModelicaSimulableSpecies> speciesInvolved = new HashSet<>();
-        for (LinkTypeComprises l: this.getModelInstantiate().getLinkComprisesSet()) {
-            BiologicalEntity be = l.getBiologicalEntity();
-            if (be instanceof Reaction) {
-                Reaction reaction = (Reaction) be;
+        for (Reaction reaction: this.getModelInstantiate().getReactions()) {
 
-                for (LinkTypeReactant linkReactant: reaction.getReactants()) {
-                    Species s = linkReactant.getSpecies();
+            for (LinkTypeReactant linkReactant : reaction.getReactants()) {
+                Species s = linkReactant.getSpecies();
+                ModelicaSimulableSpecies ss =
+                        (ModelicaSimulableSpecies) this.getSimulableSpecies(s.getId());
+                speciesInvolved.add(ss);
+            }
+
+            for (LinkTypeModifier linkModifier : reaction.getModifiers()) {
+                Species s = linkModifier.getSpecies();
+                ModelicaSimulableSpecies ss =
+                        (ModelicaSimulableSpecies) this.getSimulableSpecies(s.getId());
+                speciesInvolved.add(ss);
+            }
+
+            if (reaction.isReversible()) {
+                for (LinkTypeProduct linkProduct : reaction.getProducts()) {
+                    Species s = linkProduct.getSpecies();
                     ModelicaSimulableSpecies ss =
                             (ModelicaSimulableSpecies) this.getSimulableSpecies(s.getId());
-
                     speciesInvolved.add(ss);
-                }
-
-                if (reaction.isReversible()) {
-                    for (LinkTypeProduct linkProduct: reaction.getProducts()) {
-                        Species s = linkProduct.getSpecies();
-                        ModelicaSimulableSpecies ss =
-                                (ModelicaSimulableSpecies) this.getSimulableSpecies(s.getId());
-
-                        speciesInvolved.add(ss);
-                    }
                 }
             }
         }
@@ -317,109 +307,94 @@ public class ModelicaSimulableModel extends SimulableModel {
         }
 
         // code for linking parameters variables
-        declarations.append("\tParameters parameters;\n");
-        for (LinkTypeComprises l: this.getModelInstantiate().getLinkComprisesSet()) {
-            BiologicalEntity be = l.getBiologicalEntity();
-            if (be instanceof Compartment) {
-                Compartment comp = (Compartment) be;
-                for (LinkTypeSpeciesCompartment link: comp.getLinkSpeciesCompartmentSet()) {
-                    Species species = link.getSpecies();
-                    ModelicaSimulableSpecies simSpecies =
-                            (ModelicaSimulableSpecies) this.getSimulableSpecies(species.getId());
+        for (Compartment comp: this.getModelInstantiate().getCompartments()) {
+            for (LinkTypeSpeciesCompartment link: comp.getLinkSpeciesCompartmentSet()) {
+                Species species = link.getSpecies();
+                ModelicaSimulableSpecies simSpecies =
+                        (ModelicaSimulableSpecies) this.getSimulableSpecies(species.getId());
 
-                    if (simSpecies != null) {
-                        String speciesIAVariable = simSpecies.getInitialAmountVariableName();
-                        equations.append("\t\t"+
-                                comp.getId() + "." + speciesIAVariable +
-                                        " = " +
-                                        "parameters" + "." + speciesIAVariable +
-                                        ";\n"
-                        );
-                    }
+                if (simSpecies != null) {
+                    String speciesIAVariable = simSpecies.getInitialAmountVariableName();
+                    equations.append("\t\t"+
+                            comp.getId() + "." + speciesIAVariable +
+                                    " = " +
+                                    "parameters" + "." + speciesIAVariable +
+                                    ";\n"
+                    );
                 }
             }
         }
 
-        for (LinkTypeComprises l: this.getModelInstantiate().getLinkComprisesSet()) {
-            BiologicalEntity be = l.getBiologicalEntity();
-            if (be instanceof Reaction) {
-                Reaction reaction = (Reaction) be;
-                ModelicaSimulableReaction simReaction =
-                        (ModelicaSimulableReaction) this.getSimulableReaction(reaction.getId());
-                if (simReaction != null) {
-                    if (reaction.isComplex()){
-                        String michaelisMentenConstantName = ((MichaelisMentenModelicaSimulableReaction) simReaction).getMichaelisConstantName();
+        for (Reaction reaction: this.getModelInstantiate().getReactions()) {
+            ModelicaSimulableReaction simReaction =
+                    (ModelicaSimulableReaction) this.getSimulableReaction(reaction.getId());
+            if (simReaction != null) {
+                if (reaction.isComplex()){
+                    String michaelisMentenConstantName = ((MichaelisMentenModelicaSimulableReaction) simReaction).getMichaelisConstantName();
 
-                        equations.append("\t\t"+
-                                "reactions" + "." + michaelisMentenConstantName +
-                                " = " +
-                                "parameters" + "." + michaelisMentenConstantName +
-                                ";\n"
-                        );
+                    equations.append("\t\t"+
+                            "reactions" + "." + michaelisMentenConstantName +
+                            " = " +
+                            "parameters" + "." + michaelisMentenConstantName +
+                            ";\n"
+                    );
 
-                        String catalystConstantName = ((MichaelisMentenModelicaSimulableReaction) simReaction).getCatalystConstantName();
+                    String catalystConstantName = ((MichaelisMentenModelicaSimulableReaction) simReaction).getCatalystConstantName();
 
-                        equations.append("\t\t"+
-                                "reactions" + "." + catalystConstantName +
-                                " = " +
-                                "parameters" + "." + catalystConstantName +
-                                ";\n"
-                        );
-                        if (reaction.isReversible()) {
-                            //complex reversible code
-                        }
-
+                    equations.append("\t\t"+
+                            "reactions" + "." + catalystConstantName +
+                            " = " +
+                            "parameters" + "." + catalystConstantName +
+                            ";\n"
+                    );
+                    if (reaction.isReversible()) {
+                        //complex reversible code
                     }
-                    else{
-                        String reactionRateConstantVariable = ((MassActionModelicaSimulableReaction) simReaction).getRateConstantVariableName();
+
+                }
+                else{
+                    String reactionRateConstantVariable = ((MassActionModelicaSimulableReaction) simReaction).getRateConstantVariableName();
+                    equations.append("\t\t"+
+                            "reactions" + "." + reactionRateConstantVariable +
+                            " = " +
+                            "parameters" + "." + reactionRateConstantVariable +
+                            ";\n"
+                    );
+                    if (reaction.isReversible()) {
+                        String reactionRateInvConstantVariable = ((MassActionModelicaSimulableReaction) simReaction).getRateInvConstantVariableName();
                         equations.append("\t\t"+
-                                "reactions" + "." + reactionRateConstantVariable +
+                                "reactions" + "." + reactionRateInvConstantVariable +
                                 " = " +
-                                "parameters" + "." + reactionRateConstantVariable +
+                                "parameters" + "." + reactionRateInvConstantVariable +
                                 ";\n"
                         );
-                        if (reaction.isReversible()) {
-                            String reactionRateInvConstantVariable = ((MassActionModelicaSimulableReaction) simReaction).getRateInvConstantVariableName();
-                            equations.append("\t\t"+
-                                    "reactions" + "." + reactionRateInvConstantVariable +
-                                    " = " +
-                                    "parameters" + "." + reactionRateInvConstantVariable +
-                                    ";\n"
-                            );
-                        }
                     }
                 }
             }
         }
 
         // code for linking monitor
-        declarations.append("\tMonitor monitor;\n");
         equations.append(
                 "\t\tmonitor" + "." + getSimulationTimeVariableName() +
                         " = " +
                         "parameters" + "." + getSimulationTimeVariableName() + ";\n"
         );
 
-        for (LinkTypeComprises l: this.getModelInstantiate().getLinkComprisesSet()) {
-            BiologicalEntity be = l.getBiologicalEntity();
-            if (be instanceof Compartment) {
-                Compartment comp = (Compartment) be;
-                for (LinkTypeSpeciesCompartment link: comp.getLinkSpeciesCompartmentSet()) {
-                    Species s = link.getSpecies();
-                    ModelicaSimulableSpecies ss =
-                            (ModelicaSimulableSpecies) getSimulableSpecies(s.getId());
+        for (Compartment compartment: this.getModelInstantiate().getCompartments()) {
+            for (LinkTypeSpeciesCompartment link: compartment.getLinkSpeciesCompartmentSet()) {
+                Species s = link.getSpecies();
+                ModelicaSimulableSpecies ss =
+                        (ModelicaSimulableSpecies) getSimulableSpecies(s.getId());
 
-                    if (ss != null) {
-                        equations.append("\t\t" +
-                                comp.getId() + "." + ss.getVariableName() +
-                                " = "+
-                                "monitor" + "." + ss.getVariableName() + ";\n"
-                        );
-                    }
+                if (ss != null) {
+                    equations.append("\t\t" +
+                            compartment.getId() + "." + ss.getVariableName() +
+                            " = "+
+                            "monitor" + "." + ss.getVariableName() + ";\n"
+                    );
                 }
             }
         }
-
 
         code.append(declarations + "\n\n");
         code.append(equations + "\n\n");
@@ -431,19 +406,16 @@ public class ModelicaSimulableModel extends SimulableModel {
         StringBuilder declarations = new StringBuilder();
         Model m = this.getModelInstantiate();
 
-        for (LinkTypeComprises l: m.getLinkComprisesSet()) {
-            BiologicalEntity be = l.getBiologicalEntity();
-
-            if (be instanceof Species) {
-                String speciesCode = getSpeciesParametersCode((Species) be);
-                declarations.append("\t"+speciesCode + ";\n");
-            }
-
-            else if (be instanceof Reaction) {
-                String reactionCode = getReactionParametersCode((Reaction) be);
-                declarations.append(reactionCode);
-            }
+        for (Species species: m.getSpecies()) {
+            String speciesCode = getSpeciesParametersCode(species);
+            declarations.append("\t"+speciesCode + ";\n");
         }
+
+        for (Reaction reaction: m.getReactions()){
+            String reactionCode = getReactionParametersCode(reaction);
+            declarations.append(reactionCode);
+        }
+
         StringBuilder code = new StringBuilder("model Parameters\n");
         code.append(declarations + "\n");
         code.append("\tparameter Real simulation_time;\n");
