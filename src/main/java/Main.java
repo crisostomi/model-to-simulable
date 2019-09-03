@@ -16,7 +16,7 @@ public class Main {
         String username = System.getProperty("user.name");
         String projectFolder = "/home/"+username+"/Dropbox/Tesisti/software";
 
-        String testFolder = projectFolder + "/test-cases/urea/";
+        String testFolder = projectFolder + "/test-cases/dummy/";
         String kbPath = testFolder + "/in/"+REACTOME_FILENAME;
         String tsvPath = testFolder +"/in/"+ ABUNDANCES_FILENAME;
         String logPath = testFolder + LOG_FILENAME;

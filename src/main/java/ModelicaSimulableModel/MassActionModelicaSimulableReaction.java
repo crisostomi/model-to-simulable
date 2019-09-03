@@ -84,7 +84,7 @@ public class MassActionModelicaSimulableReaction extends ModelicaSimulableReacti
     }
 
     public String getRateConstantVariableName() {
-        return this.getReactionInstantiate().getId() + "_rateConstant";
+        return this.getReactionInstantiate().getId() + "_K";
     }
 
 
@@ -92,7 +92,7 @@ public class MassActionModelicaSimulableReaction extends ModelicaSimulableReacti
     public String getRateInvConstantVariableName() {
         assert this.getReactionInstantiate().isReversible();
 
-        return this.getReactionInstantiate().getId() + "_rateInvConstant";
+        return this.getReactionInstantiate().getId() + "_K_inv";
     }
 
     public ModelicaParameter getParameter() {
