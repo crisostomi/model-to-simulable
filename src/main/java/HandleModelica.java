@@ -2,7 +2,7 @@ import DataTypes.ModelicaCode;
 import Model.Model;
 import ModelicaSimulableModel.ModelicaSimulableModel;
 import SimulableModel.PreconditionsException;
-import Util.Parameter2XML;
+import Util.XMLHandler;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -31,8 +31,10 @@ public class HandleModelica {
             fw.close();
         }
 
-        Parameter2XML.buildParametersXML(m.getUndefinedParameters(), outputFolder + "/parameters.xml");
+        XMLHandler.buildParametersXML(m.getUndefinedParameters(), outputFolder + "/parameters.xml");
+        XMLHandler.buildProteinConstraintsXML(m.getProteinConstraints(), outputFolder + "/constraints.xml");
     }
+
 
     public static ModelicaSimulableModel loadModel(String modelPath) throws IOException, PreconditionsException {
         Model m = Model.load(modelPath);

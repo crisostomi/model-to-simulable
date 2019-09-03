@@ -43,7 +43,8 @@ public class ModelicaSimulableModel extends SimulableModel {
                 map.put(fileName,getModuleCode(comp));
             }
         }
-        map.put("Parameters", getParamersCode());
+        map.put("Parameters", getParametersCode());
+        map.put("Monitor", getMonitorCode());
         map.put("Reactions", getReactionsCode());
         map.put("System", getLinkingModule());
         return map;
@@ -74,7 +75,7 @@ public class ModelicaSimulableModel extends SimulableModel {
                 parameters.append("\tReal " + reactionRateConstantVariable + ";\n");
 
                 String rateFormula = simReaction.getRateFormula().getCode();
-                equation.append("\t\t"+ reactionRateConstantVariable + " = " + rateFormula + ";\n");
+                equation.append("\t\t"+ reactionRateVariable + " = " + rateFormula + ";\n");
 
                 for (LinkTypeReactant linkReactant: reaction.getReactants()){
                     Species species = linkReactant.getSpecies();
@@ -188,8 +189,6 @@ public class ModelicaSimulableModel extends SimulableModel {
 
         StringBuilder declarations = new StringBuilder();
         StringBuilder equations = new StringBuilder("\tequation\n");
-        declarations.append("\tReactions reactions;\n");
-        declarations.append("\tParameters parameters;\n");
 
         // code for linking species variables
         for (LinkTypeComprises link: this.getModelInstantiate().getLinkComprisesSet()) {
@@ -224,7 +223,8 @@ public class ModelicaSimulableModel extends SimulableModel {
             }
         }
 
-        // code for linking reaction variable
+        // code for linking reaction variables
+        declarations.append("\tReactions reactions;\n");
         Set<ModelicaSimulableSpecies> speciesInvolved = new HashSet<>();
         for (LinkTypeComprises l: this.getModelInstantiate().getLinkComprisesSet()) {
             BiologicalEntity be = l.getBiologicalEntity();
@@ -263,6 +263,7 @@ public class ModelicaSimulableModel extends SimulableModel {
         }
 
         // code for linking parameters variables
+        declarations.append("\tParameters parameters;\n");
         for (LinkTypeComprises l: this.getModelInstantiate().getLinkComprisesSet()) {
             BiologicalEntity be = l.getBiologicalEntity();
             if (be instanceof Compartment) {
@@ -313,13 +314,42 @@ public class ModelicaSimulableModel extends SimulableModel {
             }
         }
 
+        // code for linking monitor
+        declarations.append("\tMonitor monitor;\n");
+        equations.append(
+                "\t\tmonitor" + "." + getSimulationTimeVariableName() +
+                        " = " +
+                        "parameters" + "." + getSimulationTimeVariableName() + ";\n"
+        );
+
+        for (LinkTypeComprises l: this.getModelInstantiate().getLinkComprisesSet()) {
+            BiologicalEntity be = l.getBiologicalEntity();
+            if (be instanceof Compartment) {
+                Compartment comp = (Compartment) be;
+                for (LinkTypeSpeciesCompartment link: comp.getLinkSpeciesCompartmentSet()) {
+                    Species s = link.getSpecies();
+                    ModelicaSimulableSpecies ss =
+                            (ModelicaSimulableSpecies) getSimulableSpecies(s.getId());
+
+                    if (ss != null) {
+                        equations.append("\t\t" +
+                                comp.getId() + "." + ss.getVariableName() +
+                                " = "+
+                                "monitor" + "." + ss.getVariableName() + ";\n"
+                        );
+                    }
+                }
+            }
+        }
+
+
         code.append(declarations + "\n\n");
         code.append(equations + "\n\n");
         code.append("end System;\n");
         return new ModelicaCode(code.toString());
     }
 
-    private ModelicaCode getParamersCode() {
+    private ModelicaCode getParametersCode() {
         StringBuilder declarations = new StringBuilder();
         Model m = this.getModelInstantiate();
 
@@ -329,6 +359,10 @@ public class ModelicaSimulableModel extends SimulableModel {
                 Species s = (Species) be;
                 ModelicaSimulableSpecies species =
                         (ModelicaSimulableSpecies) this.getSimulableSpecies(s.getId());
+
+                if (species == null) {
+                    int i = 0;
+                }
 
                 String speciesIAVariable = species.getInitialAmountVariableName();
                 String line = "parameter Real " + speciesIAVariable;
@@ -370,6 +404,62 @@ public class ModelicaSimulableModel extends SimulableModel {
         return new ModelicaCode(code.toString());
     }
 
+    private ModelicaCode getMonitorCode() {
+        StringBuilder declarations = new StringBuilder();
+        StringBuilder initialEquation = new StringBuilder("\tinitial equation\n");
+        StringBuilder equation = new StringBuilder("\tequation\n");
+
+        declarations.append("\tReal " + getSimulationTimeVariableName() + ";\n");
+
+        for (LinkTypeComprises link: this.getModelInstantiate().getLinkComprisesSet()) {
+            BiologicalEntity be = link.getBiologicalEntity();
+            if (be instanceof Compartment) {
+                Compartment comp = (Compartment) be;
+                for (LinkTypeSpeciesCompartment linkComp: comp.getLinkSpeciesCompartmentSet()) {
+                    Species s = linkComp.getSpecies();
+                    ModelicaSimulableSpecies ss =
+                            (ModelicaSimulableSpecies) this.getSimulableSpecies(s.getId());
+
+                    if (ss != null) {
+                        declarations.append("\tReal " + ss.getVariableName() + ";\n");
+                        declarations.append("\tReal " + ss.getAverageVariableName() + ";\n");
+                        initialEquation.append("\t\t" + ss.getAverageVariableName() + " = 0;\n");
+                        equation.append(
+                                "\t\tder(" + ss.getAverageVariableName() + ")" +
+                                " = " +
+                                "1" + "/" + getSimulationTimeVariableName() + " * " + ss.getVariableName()
+                                + ";\n"
+                        );
+                    }
+                }
+            }
+        }
+
+        StringBuilder code = new StringBuilder("model Monitor\n");
+        code.append(declarations + "\n");
+        code.append(initialEquation + "\n");
+        code.append(equation + "\n");
+        code.append("end Monitor;\n");
+        return new ModelicaCode(code.toString());
+    }
+
+    public Map<String, Double> getProteinConstraints() {
+        Map<String, Double> constraints = new HashMap<>();
+        for (LinkTypeSimulableSpeciesComprises link: this.getLinkSimulableSpeciesComprises()) {
+            ModelicaSimulableSpecies ss =
+                    (ModelicaSimulableSpecies) link.getSimulableSpecies();
+            Species s = ss.getSpeciesInstantiate();
+            if (s instanceof Protein) {
+                Protein p = (Protein) s;
+                if (p.getAbundance() != null) {
+                    constraints.put(ss.getAverageVariableName(), p.getAbundance());
+                }
+            }
+        }
+
+        return constraints;
+    }
+
     public List<UndefinedParameter> getUndefinedParameters(){
         List<UndefinedParameter> params = new ArrayList<>();
         for (LinkTypeSimulableSpeciesComprises link: this.getLinkSimulableSpeciesComprises()){
@@ -393,5 +483,9 @@ public class ModelicaSimulableModel extends SimulableModel {
 
     private String getModuleName(Compartment comp) {
         return comp.getId().substring(0, 1).toUpperCase() + comp.getId().substring(1);
+    }
+
+    private String getSimulationTimeVariableName() {
+        return "simulation_time";
     }
 }
