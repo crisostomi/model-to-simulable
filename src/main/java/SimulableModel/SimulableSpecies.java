@@ -1,11 +1,7 @@
 package SimulableModel;
 
 import DataTypes.Expression;
-import DataTypes.Parameter;
-import Model.Reaction;
 import Model.Species;
-
-import java.util.Set;
 
 public abstract class SimulableSpecies {
 

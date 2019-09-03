@@ -1,10 +1,10 @@
 package DataTypes;
 
-public class UndefinedParameter extends Parameter {
+public class UndefinedModelicaParameter extends ModelicaParameter {
     private final double lowerBound;
     private final double upperBound;
 
-    public UndefinedParameter(String name, double lb, double ub) {
+    public UndefinedModelicaParameter(String name, double lb, double ub) {
         super(name);
         this.lowerBound = lb;
         this.upperBound = ub;

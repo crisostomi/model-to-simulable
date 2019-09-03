@@ -1,12 +1,11 @@
 package ModelicaSimulableModel;
 
-import DataTypes.DefinedParameter;
+import DataTypes.DefinedModelicaParameter;
 import DataTypes.ModelicaCode;
-import DataTypes.Parameter;
-import DataTypes.UndefinedParameter;
+import DataTypes.ModelicaParameter;
+import DataTypes.UndefinedModelicaParameter;
 import SimulableModel.*;
 import Model.*;
-
 import java.util.*;
 
 
@@ -22,14 +21,20 @@ public class ModelicaSimulableModel extends SimulableModel {
                     Reaction reaction = linkReacComp.getReaction();
 
                     if (!reaction.getReactants().isEmpty() || !reaction.getProducts().isEmpty()) {
-                        ModelicaSimulableReaction simulableReaction = new MassActionModelicaSimulableReaction(reaction, this);
+                        ModelicaSimulableReaction simulableReaction;
+                        if (reaction.isComplex()){
+                            simulableReaction = new MichaelisMentenModelicaSimulableReaction(reaction, this);
+                        }
+                        else {
+                            simulableReaction = new MassActionModelicaSimulableReaction(reaction, this);
+
+                        }
                         LinkSimulableReactionComprises.insertLink(this, simulableReaction);
                     }
                 }
             }
         }
     }
-
 
     @Override
     public Map<String, ModelicaCode> getModules() {
@@ -70,51 +75,38 @@ public class ModelicaSimulableModel extends SimulableModel {
                     line = line + " \"" + reaction.getName() + "\"";
                 }
                 reacDeclarations.append(line + ";\n");
-
-                String reactionRateConstantVariable = simReaction.getRateConstantVariableName();
-                parameters.append("\tReal " + reactionRateConstantVariable + ";\n");
-
                 String rateFormula = simReaction.getRateFormula().getCode();
                 equation.append("\t\t"+ reactionRateVariable + " = " + rateFormula + ";\n");
 
-                for (LinkTypeReactant linkReactant: reaction.getReactants()){
-                    Species species = linkReactant.getSpecies();
-
-                    String speciesVariable =
-                            ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
-
-                    line = "\tReal "+speciesVariable;
-                    if (species.getName() != null) {
-                        line = line + " \"" + species.getName() + "\"";
-                    }
-                    speciesDeclarations.append(line+";\n");
+                if ( reaction.isComplex() ){
+                      String reactionRateKm = ((MichaelisMentenModelicaSimulableReaction) simReaction).getMichaelisConstantName();
+                      line = "\tReal " + reactionRateKm+";\n";
+                      String reactionRateKcat = ((MichaelisMentenModelicaSimulableReaction) simReaction).getCatalystConstantName();
+                      line += "\tReal " + reactionRateKcat;
+                      reacDeclarations.append(line + ";"+"\n");
+                }
+                else {
+                    String reactionRateConstantVariable =( (MassActionModelicaSimulableReaction) simReaction).getRateConstantVariableName();
+                    parameters.append("\tReal " + reactionRateConstantVariable + ";\n");
+                    speciesDeclarations.append(getReactantsNeededForRate(reaction));
                 }
 
                 if (reaction.isReversible()){
-                    String reactionRateInvConstantVariable = simReaction.getRateInvConstantVariableName();
-                    parameters.append("\tparameter Real " + reactionRateInvConstantVariable + ";\n");
+                    if (reaction.isComplex()){
+                        // complex reversible code
+                    }
+                    else {
+                        String reactionRateInvConstantVariable = ((MassActionModelicaSimulableReaction) simReaction).getRateInvConstantVariableName();
+                        parameters.append("\tparameter Real " + reactionRateInvConstantVariable + ";\n");
+                        speciesDeclarations.append(getProductsNeededForRate(reaction));
+                    }
 
                     String reactionRateInvVariable = simReaction.getRateInvVariableName();
                     String rateInvFormula = simReaction.getRateInvFormula().getCode();
-
                     equation.append("\t\t"+ reactionRateInvVariable + " = " + rateInvFormula + ";\n");
-
-                    for (LinkTypeProduct linkProduct: reaction.getProducts()){
-                        Species species = linkProduct.getSpecies();
-
-                        String speciesVariable =
-                                ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
-
-                        line = "\tReal "+speciesVariable;
-                        if (species.getName() != null) {
-                            line = line + " \"" + species.getName() + "\"";
-                        }
-                        speciesDeclarations.append(line+";\n");
-                    }
                 }
             }
         }
-
 
         StringBuilder code = new StringBuilder("model Reactions\n");
         code.append(parameters + "\n");
@@ -123,6 +115,39 @@ public class ModelicaSimulableModel extends SimulableModel {
         code.append(equation + "\n\n");
         code.append("end Reactions;\n");
         return new ModelicaCode(code.toString());
+    }
+
+    private String getReactantsNeededForRate(Reaction reaction){
+        String line = "";
+        for (LinkTypeReactant linkReactant: reaction.getReactants()){
+            Species species = linkReactant.getSpecies();
+            String speciesVariable =
+                    ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
+
+            line += "\tReal "+speciesVariable;
+            if (species.getName() != null) {
+                line = line + " \"" + species.getName() + "\"";
+            }
+            line += ";\n";
+        }
+        return line;
+    }
+
+    private String getProductsNeededForRate(Reaction reaction){
+        String line = "";
+        for (LinkTypeProduct linkProduct: reaction.getProducts()){
+            Species species = linkProduct.getSpecies();
+
+            String speciesVariable =
+                    ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
+
+            line += "\tReal "+speciesVariable;
+            if (species.getName() != null) {
+                line = line + " \"" + species.getName() + "\"";
+            }
+            line += ";\n";
+        }
+        return line;
     }
 
     private ModelicaCode getModuleCode(Compartment comp) {
@@ -292,23 +317,47 @@ public class ModelicaSimulableModel extends SimulableModel {
                 Reaction reaction = (Reaction) be;
                 ModelicaSimulableReaction simReaction =
                         (ModelicaSimulableReaction) this.getSimulableReaction(reaction.getId());
-
                 if (simReaction != null) {
-                    String reactionRateConsantVariable = simReaction.getRateConstantVariableName();
-                    equations.append("\t\t"+
-                            "reactions" + "." + reactionRateConsantVariable +
-                                    " = " +
-                                    "parameters" + "." + reactionRateConsantVariable +
-                                    ";\n"
-                    );
-                    if (reaction.isReversible()) {
-                        String reactionRateInvConstantVariable = simReaction.getRateInvConstantVariableName();
+                    if (reaction.isComplex()){
+                        String michaelisMentenConstantName = ((MichaelisMentenModelicaSimulableReaction) simReaction).getMichaelisConstantName();
+
                         equations.append("\t\t"+
-                                "reactions" + "." + reactionRateInvConstantVariable +
-                                        " = " +
-                                        "parameters" + "." + reactionRateInvConstantVariable +
-                                        ";\n"
+                                "reactions" + "." + michaelisMentenConstantName +
+                                " = " +
+                                "parameters" + "." + michaelisMentenConstantName +
+                                ";\n"
                         );
+
+                        String catalystConstantName = ((MichaelisMentenModelicaSimulableReaction) simReaction).getCatalystConstantName();
+
+                        equations.append("\t\t"+
+                                "reactions" + "." + catalystConstantName +
+                                " = " +
+                                "parameters" + "." + catalystConstantName +
+                                ";\n"
+                        );
+                        if (reaction.isReversible()) {
+                            //complex reversible code
+                        }
+
+                    }
+                    else{
+                        String reactionRateConstantVariable = ((MassActionModelicaSimulableReaction) simReaction).getRateConstantVariableName();
+                        equations.append("\t\t"+
+                                "reactions" + "." + reactionRateConstantVariable +
+                                " = " +
+                                "parameters" + "." + reactionRateConstantVariable +
+                                ";\n"
+                        );
+                        if (reaction.isReversible()) {
+                            String reactionRateInvConstantVariable = ((MassActionModelicaSimulableReaction) simReaction).getRateInvConstantVariableName();
+                            equations.append("\t\t"+
+                                    "reactions" + "." + reactionRateInvConstantVariable +
+                                    " = " +
+                                    "parameters" + "." + reactionRateInvConstantVariable +
+                                    ";\n"
+                            );
+                        }
                     }
                 }
             }
@@ -355,53 +404,82 @@ public class ModelicaSimulableModel extends SimulableModel {
 
         for (LinkTypeComprises l: m.getLinkComprisesSet()) {
             BiologicalEntity be = l.getBiologicalEntity();
+
             if (be instanceof Species) {
-                Species s = (Species) be;
-                ModelicaSimulableSpecies species =
-                        (ModelicaSimulableSpecies) this.getSimulableSpecies(s.getId());
+                String speciesCode = getSpeciesParametersCode((Species) be);
+                declarations.append("\t"+speciesCode + ";\n");
+            }
 
-                if (species == null) {
-                    int i = 0;
-                }
-
-                String speciesIAVariable = species.getInitialAmountVariableName();
-                String line = "parameter Real " + speciesIAVariable;
-                Parameter speciesParameter = species.getParameter();
-                if (speciesParameter instanceof DefinedParameter) {
-                    line = line + " = " + ((DefinedParameter) speciesParameter).getValue();
-                }
-                declarations.append("\t"+line + ";\n");
-            } else if (be instanceof Reaction) {
-                Reaction r = (Reaction) be;
-                ModelicaSimulableReaction reaction =
-                        (ModelicaSimulableReaction) this.getSimulableReaction(r.getId());
-
-                String rateConsantVariable = reaction.getRateConstantVariableName();
-                String line = "parameter Real " + rateConsantVariable;
-                Parameter rateParameter = reaction.getParameter();
-                if (rateParameter instanceof DefinedParameter) {
-                    line = line + " = " + ((DefinedParameter) rateParameter).getValue();
-                }
-                declarations.append("\t"+line + ";\n");
-
-                if (r.isReversible()) {
-                    String rateInvConstantVariable = reaction.getRateInvVariableName();
-                    line = "parameter Real " + rateInvConstantVariable;
-                    Parameter rateInvParameter = reaction.getInvParameter();
-                    if (rateInvParameter instanceof DefinedParameter) {
-                        line = line + " = " + ((DefinedParameter) rateInvParameter).getValue();
-                    }
-
-                    declarations.append("\t"+line + ";\n");
-                }
+            else if (be instanceof Reaction) {
+                String reactionCode = getReactionParametersCode((Reaction) be);
+                declarations.append(reactionCode);
             }
         }
-
         StringBuilder code = new StringBuilder("model Parameters\n");
         code.append(declarations + "\n");
         code.append("end Parameters;\n");
-
         return new ModelicaCode(code.toString());
+    }
+
+    private String getSpeciesParametersCode(Species species){
+        ModelicaSimulableSpecies simulableSpecies =
+                (ModelicaSimulableSpecies) this.getSimulableSpecies(species.getId());
+
+        String speciesIAVariable = simulableSpecies.getInitialAmountVariableName();
+        String line = "parameter Real " + speciesIAVariable;
+        ModelicaParameter speciesModelicaParameter = simulableSpecies.getParameter();
+        if (speciesModelicaParameter instanceof DefinedModelicaParameter) {
+            line = line + " = " + ((DefinedModelicaParameter) speciesModelicaParameter).getValue();
+        }
+        return line;
+    }
+
+    private String getReactionParametersCode(Reaction reaction) {
+        SimulableReaction simulableReaction = this.getSimulableReaction(reaction.getId());
+        StringBuilder declarations = new StringBuilder();
+
+        if (reaction.isComplex()) {
+
+            String michaelisConstantName = ((MichaelisMentenModelicaSimulableReaction) simulableReaction).getMichaelisConstantName();
+            String line = "parameter Real " + michaelisConstantName+";\n";
+            ModelicaParameter Km = ((MichaelisMentenModelicaSimulableReaction) simulableReaction).getMichaelisParameter();
+            if (Km instanceof DefinedModelicaParameter) {
+                line = line + " = " + ((DefinedModelicaParameter) Km).getValue();
+            }
+
+            String catalystConstantName = ((MichaelisMentenModelicaSimulableReaction) simulableReaction).getCatalystConstantName();
+            line += "\tparameter Real " + catalystConstantName;
+            ModelicaParameter Kcat = ((MichaelisMentenModelicaSimulableReaction) simulableReaction).getCatalystParameter();
+            if (Kcat instanceof DefinedModelicaParameter) {
+                line = line + " = " + ((DefinedModelicaParameter) Kcat).getValue();
+            }
+
+            declarations.append("\t"+line+";\n");
+        } else {
+            String rateConstantVariable = ((MassActionModelicaSimulableReaction) simulableReaction).getRateConstantVariableName();
+            String line = "parameter Real " + rateConstantVariable;
+            ModelicaParameter rateModelicaParameter = ((MassActionModelicaSimulableReaction) simulableReaction).getParameter();
+            if (rateModelicaParameter instanceof DefinedModelicaParameter) {
+                line = line + " = " + ((DefinedModelicaParameter) rateModelicaParameter).getValue();
+            }
+            declarations.append("\t" + line + ";\n");
+        }
+
+        if (reaction.isReversible()) {
+            if (reaction.isComplex()) {
+                //complex reversible code
+            } else {
+                String rateInvConstantVariable = ((MassActionModelicaSimulableReaction) simulableReaction).getRateInvVariableName();
+                String line = "parameter Real " + rateInvConstantVariable;
+                ModelicaParameter rateInvModelicaParameter = ((MassActionModelicaSimulableReaction) simulableReaction).getInvParameter();
+                if (rateInvModelicaParameter instanceof DefinedModelicaParameter) {
+                    line = line + " = " + ((DefinedModelicaParameter) rateInvModelicaParameter).getValue();
+                }
+
+                declarations.append("\t" + line + ";\n");
+            }
+        }
+        return declarations.toString();
     }
 
     private ModelicaCode getMonitorCode() {
@@ -460,23 +538,38 @@ public class ModelicaSimulableModel extends SimulableModel {
         return constraints;
     }
 
-    public List<UndefinedParameter> getUndefinedParameters(){
-        List<UndefinedParameter> params = new ArrayList<>();
+    public List<UndefinedModelicaParameter> getUndefinedParameters(){
+        List<UndefinedModelicaParameter> params = new ArrayList<>();
         for (LinkTypeSimulableSpeciesComprises link: this.getLinkSimulableSpeciesComprises()){
             ModelicaSimulableSpecies simSpecies =
                     (ModelicaSimulableSpecies) link.getSimulableSpecies();
-            Parameter speciesParam = simSpecies.getParameter();
-            if (speciesParam instanceof UndefinedParameter) {
-                params.add((UndefinedParameter) speciesParam);
+            ModelicaParameter speciesParam = simSpecies.getParameter();
+            if (speciesParam instanceof UndefinedModelicaParameter) {
+                params.add((UndefinedModelicaParameter) speciesParam);
             }
         }
         for (LinkTypeSimulableReactionComprises link: this.getLinkSimulableReactionComprises()){
             ModelicaSimulableReaction simReac =
                     (ModelicaSimulableReaction)link.getSimulableReaction();
-            Parameter reactionParam = simReac.getParameter();
-            if (reactionParam instanceof UndefinedParameter) {
-                params.add((UndefinedParameter) reactionParam);
+            if (simReac.getReactionInstantiate().isComplex()){
+                ModelicaParameter michaelisParameter = ((MichaelisMentenModelicaSimulableReaction) simReac).getMichaelisParameter();
+                if (michaelisParameter instanceof UndefinedModelicaParameter) {
+                    params.add((UndefinedModelicaParameter) michaelisParameter);
+                }
+
+                ModelicaParameter catalystParameter = ((MichaelisMentenModelicaSimulableReaction) simReac).getCatalystParameter();
+                if (catalystParameter instanceof UndefinedModelicaParameter) {
+                    params.add((UndefinedModelicaParameter) catalystParameter);
+                }
+
             }
+            else {
+                ModelicaParameter reactionParam = ((MassActionModelicaSimulableReaction) simReac).getParameter();
+                if (reactionParam instanceof UndefinedModelicaParameter) {
+                    params.add((UndefinedModelicaParameter) reactionParam);
+                }
+            }
+
         }
         return params;
     }

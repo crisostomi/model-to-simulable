@@ -1,9 +1,9 @@
 package DataTypes;
 
-public abstract class Parameter {
+public abstract class ModelicaParameter {
     private final String parameterName;
 
-    public Parameter(String name) {
+    public ModelicaParameter(String name) {
         this.parameterName = name;
     }
 

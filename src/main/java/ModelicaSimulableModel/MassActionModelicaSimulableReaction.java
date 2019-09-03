@@ -1,7 +1,6 @@
 package ModelicaSimulableModel;
 
-import DataTypes.ModelicaCode;
-import DataTypes.Parameter;
+import DataTypes.*;
 import Model.*;
 import SimulableModel.*;
 
@@ -11,6 +10,7 @@ import Model.LinkTypeProduct;
 import Model.LinkTypeReactant;
 import Model.Reaction;
 import Model.Species;
+import SimulableModel.PreconditionsException;
 
 
 public class MassActionModelicaSimulableReaction extends ModelicaSimulableReaction{
@@ -77,5 +77,46 @@ public class MassActionModelicaSimulableReaction extends ModelicaSimulableReacti
 
         }
         return new ModelicaCode(code.toString());
+    }
+
+    public String getRateVariableName() {
+        return this.getReactionInstantiate().getId() + "_rate";
+    }
+
+    public String getRateConstantVariableName() {
+        return this.getReactionInstantiate().getId() + "_rateConstant";
+    }
+
+
+
+    public String getRateInvConstantVariableName() {
+        assert this.getReactionInstantiate().isReversible();
+
+        return this.getReactionInstantiate().getId() + "_rateInvConstant";
+    }
+
+    public ModelicaParameter getParameter() {
+        String parameterName = this.getRateConstantVariableName();
+        Reaction r = this.getReactionInstantiate();
+
+        if (r.getRate(RateParameter.K).getLowerBound() == r.getRate(RateParameter.K).getUpperBound()) {
+            return new DefinedModelicaParameter(parameterName, r.getRate(RateParameter.K).getLowerBound());
+        } else {
+            return new UndefinedModelicaParameter(parameterName, r.getRate(RateParameter.K).getLowerBound(), r.getRate(RateParameter.K).getUpperBound());
+        }
+    }
+
+    public ModelicaParameter getInvParameter() {
+        Reaction r = this.getReactionInstantiate();
+        assert r.isReversible();
+
+        String parameterName = this.getRateInvConstantVariableName();
+        try {
+            if (r.getRateInv(RateParameter.K).getLowerBound() == r.getRateInv(RateParameter.K).getUpperBound()) {
+                return new DefinedModelicaParameter(parameterName, r.getRateInv(RateParameter.K).getLowerBound());
+            } else {
+                return new UndefinedModelicaParameter(parameterName, r.getRateInv(RateParameter.K).getLowerBound(), r.getRateInv(RateParameter.K).getUpperBound());
+            }
+        } catch (DataTypes.PreconditionsException e) {return null;}
     }
 }

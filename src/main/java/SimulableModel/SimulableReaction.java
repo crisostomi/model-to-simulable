@@ -1,7 +1,6 @@
 package SimulableModel;
 
 import DataTypes.Constraint;
-import DataTypes.Parameter;
 import Model.Reaction;
 
 public abstract class SimulableReaction {

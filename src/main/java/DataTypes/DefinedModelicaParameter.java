@@ -1,9 +1,9 @@
 package DataTypes;
 
-public class DefinedParameter extends Parameter {
+public class DefinedModelicaParameter extends ModelicaParameter {
     private final Double value;
 
-    public DefinedParameter(String name, Double value) {
+    public DefinedModelicaParameter(String name, Double value) {
         super(name);
         this.value = value;
     }

@@ -1,8 +1,6 @@
 package Util;
 
-import DataTypes.DefinedParameter;
-import DataTypes.Parameter;
-import DataTypes.UndefinedParameter;
+import DataTypes.UndefinedModelicaParameter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -23,7 +21,7 @@ import java.util.Map;
 
 public class XMLHandler {
 
-    public static void buildParametersXML(List<UndefinedParameter> params, String path)
+    public static void buildParametersXML(List<UndefinedModelicaParameter> params, String path)
             throws ParserConfigurationException,
                     TransformerException
     {
@@ -57,7 +55,7 @@ public class XMLHandler {
         return result;
     }
 
-    private static Document buildParametersDocument(List<UndefinedParameter> params)
+    private static Document buildParametersDocument(List<UndefinedModelicaParameter> params)
             throws ParserConfigurationException {
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -67,7 +65,7 @@ public class XMLHandler {
         Node parameters = result.createElement("parameters");
         result.appendChild(parameters);
 
-        for (UndefinedParameter p: params) {
+        for (UndefinedModelicaParameter p: params) {
             Element element = result.createElement("parameter");
             element.setAttribute("name", p.getParameterName());
             element.setAttribute("lowerBound", String.valueOf(p.getLowerBound()));

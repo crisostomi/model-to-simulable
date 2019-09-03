@@ -1,9 +1,9 @@
 package ModelicaSimulableModel;
 
-import DataTypes.DefinedParameter;
+import DataTypes.DefinedModelicaParameter;
 import DataTypes.ModelicaCode;
-import DataTypes.Parameter;
-import DataTypes.UndefinedParameter;
+import DataTypes.ModelicaParameter;
+import DataTypes.UndefinedModelicaParameter;
 import Model.*;
 import SimulableModel.*;
 
@@ -54,14 +54,14 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
         return rhs;
     }
 
-    public Parameter getParameter() {
+    public ModelicaParameter getParameter() {
         Species s = this.getSpeciesInstantiate();
         String parameterName = this.getInitialAmountVariableName();
 
         if (s.getInitialAmount().getLowerBound() == s.getInitialAmount().getUpperBound()) {
-            return new DefinedParameter(parameterName, s.getInitialAmount().getLowerBound());
+            return new DefinedModelicaParameter(parameterName, s.getInitialAmount().getLowerBound());
         } else {
-            return new UndefinedParameter(parameterName, s.getInitialAmount().getLowerBound(), s.getInitialAmount().getUpperBound());
+            return new UndefinedModelicaParameter(parameterName, s.getInitialAmount().getLowerBound(), s.getInitialAmount().getUpperBound());
         }
     }
 
