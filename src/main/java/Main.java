@@ -10,7 +10,7 @@ public class Main {
     public static final String ABUNDANCES_FILENAME = "abundances.tsv";
     public static final String REACTOME_FILENAME = "pathway.sbml";
     public static final String LOG_FILENAME = "log.txt";
-    public static final String TEST = "urea";
+    public static final String TEST = "dummy";
 
     public static void main(String[] args) {
 

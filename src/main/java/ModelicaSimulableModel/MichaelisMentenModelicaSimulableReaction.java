@@ -17,17 +17,17 @@ public class MichaelisMentenModelicaSimulableReaction extends ModelicaSimulableR
         super(reaction);
 
         Set<Species> speciesInvolved = new HashSet<>();
-        for (LinkTypeReactant l: reaction.getReactants()) {
+        for (LinkTypeReactant l: reaction.getLinkReactantSet()) {
             Species s = l.getSpecies();
             speciesInvolved.add(s);
         }
 
-        for (LinkTypeProduct l: reaction.getProducts()) {
+        for (LinkTypeProduct l: reaction.getLinkProductSet()) {
             Species s = l.getSpecies();
             speciesInvolved.add(s);
         }
 
-        for (LinkTypeModifier l: reaction.getModifiers()) {
+        for (LinkTypeModifier l: reaction.getLinkModifierSet()) {
             Species s = l.getSpecies();
             speciesInvolved.add(s);
         }
@@ -45,8 +45,8 @@ public class MichaelisMentenModelicaSimulableReaction extends ModelicaSimulableR
 
     @Override
     public ModelicaCode getRateFormula() {
-        Set<LinkTypeModifier> modifierLinks = this.getReactionInstantiate().getModifiers();
-        Set<LinkTypeReactant> reactantLinks = this.getReactionInstantiate().getReactants();
+        Set<LinkTypeModifier> modifierLinks = this.getReactionInstantiate().getLinkModifierSet();
+        Set<LinkTypeReactant> reactantLinks = this.getReactionInstantiate().getLinkReactantSet();
         StringBuilder code = new StringBuilder();
 
         StringBuilder enzymes = new StringBuilder();

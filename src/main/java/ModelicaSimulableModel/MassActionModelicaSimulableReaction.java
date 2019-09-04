@@ -18,17 +18,17 @@ public class MassActionModelicaSimulableReaction extends ModelicaSimulableReacti
         super(reaction);
 
         Set<Species> speciesInvolved = new HashSet<>();
-        for (LinkTypeReactant l: reaction.getReactants()) {
+        for (LinkTypeReactant l: reaction.getLinkReactantSet()) {
             Species s = l.getSpecies();
             speciesInvolved.add(s);
         }
 
-        for (LinkTypeProduct l: reaction.getProducts()) {
+        for (LinkTypeProduct l: reaction.getLinkProductSet()) {
             Species s = l.getSpecies();
             speciesInvolved.add(s);
         }
 
-        for (LinkTypeModifier l: reaction.getModifiers()) {
+        for (LinkTypeModifier l: reaction.getLinkModifierSet()) {
             Species s = l.getSpecies();
             speciesInvolved.add(s);
         }
@@ -46,7 +46,7 @@ public class MassActionModelicaSimulableReaction extends ModelicaSimulableReacti
 
     @Override
     public ModelicaCode getRateFormula() {
-        Set<LinkTypeReactant> reactantLinks = this.getReactionInstantiate().getReactants();
+        Set<LinkTypeReactant> reactantLinks = this.getReactionInstantiate().getLinkReactantSet();
         StringBuilder code = new StringBuilder(""+this.getRateConstantVariableName());
         for (LinkTypeReactant link:reactantLinks){
             Species species = link.getSpecies();
@@ -63,7 +63,7 @@ public class MassActionModelicaSimulableReaction extends ModelicaSimulableReacti
 
     @Override
     public ModelicaCode getRateInvFormula() {
-        Set<LinkTypeProduct> productLinks = this.getReactionInstantiate().getProducts();
+        Set<LinkTypeProduct> productLinks = this.getReactionInstantiate().getLinkProductSet();
         StringBuilder code = new StringBuilder("" + this.getRateInvConstantVariableName());
         for (LinkTypeProduct link : productLinks) {
             Species species = link.getSpecies();

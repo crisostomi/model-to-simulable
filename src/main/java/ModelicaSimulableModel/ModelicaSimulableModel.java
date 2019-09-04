@@ -16,8 +16,8 @@ public class ModelicaSimulableModel extends SimulableModel {
         super(model);
         for (Compartment compartment: model.getCompartments()){
 
-            for (LinkTypeReactionCompartment linkReacComp: compartment.getLinkReactionCompartmentSet()){
-                Reaction reaction = linkReacComp.getReaction();
+            for (Reaction reaction: compartment.getReactions()){
+
                 if (!reaction.getReactants().isEmpty() || !reaction.getProducts().isEmpty()) {
                     ModelicaSimulableReaction simulableReaction;
                     if (reaction.isComplex()){
@@ -25,7 +25,6 @@ public class ModelicaSimulableModel extends SimulableModel {
                     }
                     else {
                         simulableReaction = new MassActionModelicaSimulableReaction(reaction, this);
-
                     }
                     LinkSimulableReactionComprises.insertLink(this, simulableReaction);
                 }
@@ -116,7 +115,7 @@ public class ModelicaSimulableModel extends SimulableModel {
 
     private String getReactantsNeededForRate(Reaction reaction){
         String line = "";
-        for (LinkTypeReactant linkReactant: reaction.getReactants()){
+        for (LinkTypeReactant linkReactant: reaction.getLinkReactantSet()){
             Species species = linkReactant.getSpecies();
             String speciesVariable =
                     ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
@@ -132,7 +131,7 @@ public class ModelicaSimulableModel extends SimulableModel {
 
     private String getReactantsAndModifiersNeededForRate(Reaction reaction){
         String line = "";
-        for (LinkTypeReactant linkReactant: reaction.getReactants()){
+        for (LinkTypeReactant linkReactant: reaction.getLinkReactantSet()){
             Species species = linkReactant.getSpecies();
             String speciesVariable =
                     ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
@@ -143,7 +142,7 @@ public class ModelicaSimulableModel extends SimulableModel {
             }
             line += ";\n";
         }
-        for (LinkTypeModifier linkModifier: reaction.getModifiers()){
+        for (LinkTypeModifier linkModifier: reaction.getLinkModifierSet()){
             Species species = linkModifier.getSpecies();
             String speciesVariable =
                     ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
@@ -159,7 +158,7 @@ public class ModelicaSimulableModel extends SimulableModel {
 
     private String getProductsNeededForRate(Reaction reaction){
         String line = "";
-        for (LinkTypeProduct linkProduct: reaction.getProducts()){
+        for (LinkTypeProduct linkProduct: reaction.getLinkProductSet()){
             Species species = linkProduct.getSpecies();
 
             String speciesVariable =
