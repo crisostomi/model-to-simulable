@@ -1,16 +1,18 @@
 package ModelicaSimulableModel;
 
-import DataTypes.DefinedModelicaParameter;
-import DataTypes.ModelicaCode;
-import DataTypes.ModelicaParameter;
-import DataTypes.UndefinedModelicaParameter;
+import DataTypes.*;
+import Model.LinkType.*;
 import SimulableModel.*;
 import Model.*;
+import SimulableModel.Link.LinkSimulableReactionComprises;
+import SimulableModel.LinkType.LinkTypeSimulableReactionComprises;
+import SimulableModel.LinkType.LinkTypeSimulableSpeciesComprises;
+
 import java.util.*;
 
 public class ModelicaSimulableModel extends SimulableModel {
 
-    public ModelicaSimulableModel(Model model) throws PreconditionsException{
+    public ModelicaSimulableModel(Model model) throws PreconditionsException {
         super(model);
         for (Compartment compartment: model.getCompartments()){
 

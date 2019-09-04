@@ -1,4 +1,7 @@
-package SimulableModel;
+package SimulableModel.LinkType;
+
+import SimulableModel.SimulableModel;
+import SimulableModel.SimulableSpecies;
 
 import java.util.Objects;
 

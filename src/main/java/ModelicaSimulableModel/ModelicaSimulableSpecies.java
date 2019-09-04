@@ -5,6 +5,9 @@ import DataTypes.ModelicaCode;
 import DataTypes.ModelicaParameter;
 import DataTypes.UndefinedModelicaParameter;
 import Model.*;
+import Model.LinkType.LinkTypeModifier;
+import Model.LinkType.LinkTypeProduct;
+import Model.LinkType.LinkTypeReactant;
 import SimulableModel.*;
 
 import java.util.HashSet;

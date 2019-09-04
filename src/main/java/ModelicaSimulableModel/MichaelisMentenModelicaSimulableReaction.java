@@ -2,14 +2,16 @@ package ModelicaSimulableModel;
 
 import DataTypes.*;
 import Model.*;
+import Model.LinkType.LinkTypeModifier;
+import Model.LinkType.LinkTypeProduct;
+import Model.LinkType.LinkTypeReactant;
 import SimulableModel.*;
-import SimulableModel.PreconditionsException;
+import SimulableModel.Link.LinkSimulableSpeciesComprises;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class MichaelisMentenModelicaSimulableReaction extends ModelicaSimulableReaction {
-
 
     public MichaelisMentenModelicaSimulableReaction(Reaction reaction, SimulableModel model) throws PreconditionsException {
         super(reaction);

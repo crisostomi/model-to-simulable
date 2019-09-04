@@ -1,7 +1,7 @@
 import DataTypes.ModelicaCode;
+import DataTypes.PreconditionsException;
 import Model.Model;
 import ModelicaSimulableModel.ModelicaSimulableModel;
-import SimulableModel.PreconditionsException;
 import Util.XMLHandler;
 
 import javax.xml.parsers.ParserConfigurationException;

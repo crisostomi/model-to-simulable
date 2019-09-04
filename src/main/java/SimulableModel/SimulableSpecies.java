@@ -1,7 +1,10 @@
 package SimulableModel;
 
 import DataTypes.Expression;
+import DataTypes.PreconditionsException;
 import Model.Species;
+import SimulableModel.Link.LinkSimulableSpeciesComprises;
+import SimulableModel.LinkType.LinkTypeSimulableSpeciesComprises;
 
 public abstract class SimulableSpecies {
 

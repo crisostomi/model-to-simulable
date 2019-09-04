@@ -1,11 +1,16 @@
 package SimulableModel;
 
+import DataTypes.PreconditionsException;
 import Model.*;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import DataTypes.Module;
+import SimulableModel.Link.LinkSimulableReactionComprises;
+import SimulableModel.Link.LinkSimulableSpeciesComprises;
+import SimulableModel.LinkType.LinkTypeSimulableReactionComprises;
+import SimulableModel.LinkType.LinkTypeSimulableSpeciesComprises;
 
 public abstract class SimulableModel {
 

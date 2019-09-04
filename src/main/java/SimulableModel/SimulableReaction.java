@@ -1,7 +1,10 @@
 package SimulableModel;
 
 import DataTypes.Constraint;
+import DataTypes.PreconditionsException;
 import Model.Reaction;
+import SimulableModel.Link.LinkSimulableReactionComprises;
+import SimulableModel.LinkType.LinkTypeSimulableReactionComprises;
 
 public abstract class SimulableReaction {
 

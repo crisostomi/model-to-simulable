@@ -1,4 +1,9 @@
-package SimulableModel;
+package SimulableModel.Link;
+
+import DataTypes.PreconditionsException;
+import SimulableModel.LinkType.LinkTypeSimulableSpeciesComprises;
+import SimulableModel.SimulableModel;
+import SimulableModel.SimulableSpecies;
 
 public class LinkSimulableSpeciesComprises {
     private LinkSimulableSpeciesComprises(){}

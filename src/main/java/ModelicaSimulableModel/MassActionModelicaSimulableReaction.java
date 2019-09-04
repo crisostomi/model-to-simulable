@@ -1,16 +1,16 @@
 package ModelicaSimulableModel;
 
 import DataTypes.*;
-import Model.*;
+import Model.LinkType.LinkTypeModifier;
 import SimulableModel.*;
 
 import java.util.HashSet;
 import java.util.Set;
-import Model.LinkTypeProduct;
-import Model.LinkTypeReactant;
+import Model.LinkType.LinkTypeProduct;
+import Model.LinkType.LinkTypeReactant;
 import Model.Reaction;
 import Model.Species;
-import SimulableModel.PreconditionsException;
+import SimulableModel.Link.LinkSimulableSpeciesComprises;
 
 
 public class MassActionModelicaSimulableReaction extends ModelicaSimulableReaction{
@@ -86,8 +86,6 @@ public class MassActionModelicaSimulableReaction extends ModelicaSimulableReacti
     public String getRateConstantVariableName() {
         return this.getReactionInstantiate().getId() + "_K";
     }
-
-
 
     public String getRateInvConstantVariableName() {
         assert this.getReactionInstantiate().isReversible();

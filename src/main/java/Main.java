@@ -10,19 +10,20 @@ public class Main {
     public static final String ABUNDANCES_FILENAME = "abundances.tsv";
     public static final String REACTOME_FILENAME = "pathway.sbml";
     public static final String LOG_FILENAME = "log.txt";
+    public static final String TEST = "urea";
 
     public static void main(String[] args) {
 
         String username = System.getProperty("user.name");
         String projectFolder = "/home/"+username+"/Dropbox/Tesisti/software";
 
-        String testFolder = projectFolder + "/test-cases/dummy/";
+        String testFolder = projectFolder + "/test-cases/"+TEST;
         String kbPath = testFolder + "/in/"+REACTOME_FILENAME;
         String tsvPath = testFolder +"/in/"+ ABUNDANCES_FILENAME;
         String logPath = testFolder + LOG_FILENAME;
         String dumpPath = testFolder + "/out/model_dump.xml";
 //        String xmlPath = testFolder + "/in/quantitative.xml";
-
+        System.out.println("Model2Simulable: testing test-case "+TEST);
         CustomLogger.setup(logPath);
 
         try {

@@ -1,4 +1,9 @@
-package SimulableModel;
+package SimulableModel.Link;
+
+import DataTypes.PreconditionsException;
+import SimulableModel.LinkType.LinkTypeSimulableReactionComprises;
+import SimulableModel.SimulableModel;
+import SimulableModel.SimulableReaction;
 
 public class LinkSimulableReactionComprises {
     private LinkSimulableReactionComprises(){}

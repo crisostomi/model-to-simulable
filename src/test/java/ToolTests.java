@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ToolTests {
     @Test
-    public void toolChain_dummyPathway_generateCorrectModelica() throws SAXException, PreconditionsException, IOException, XMLStreamException, ParserConfigurationException, FormatNotSupportedException, SimulableModel.PreconditionsException, TransformerException, InterruptedException {
+    public void toolChain_dummyPathway_generateCorrectModelica() throws SAXException, PreconditionsException, IOException, XMLStreamException, ParserConfigurationException, FormatNotSupportedException, PreconditionsException, TransformerException, InterruptedException {
         String username = System.getProperty("user.name");
         String projectFolder = "/home/"+username+"/Dropbox/Tesisti/software";
         String testFolder = projectFolder + "/test-cases/dummy";
