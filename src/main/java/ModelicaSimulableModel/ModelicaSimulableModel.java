@@ -52,8 +52,8 @@ public class ModelicaSimulableModel extends SimulableModel {
     private ModelicaCode getReactionsCode() {
         StringBuilder parameters = new StringBuilder();
         StringBuilder reacDeclarations = new StringBuilder();
-        StringBuilder speciesDeclarations = new StringBuilder();
         StringBuilder equation = new StringBuilder("\tequation\n");
+        Set<String> speciesVariablesNeededForRate = new HashSet<>();
 
         for (Reaction reaction:this.getModelInstantiate().getReactions()){
 
@@ -73,19 +73,21 @@ public class ModelicaSimulableModel extends SimulableModel {
 
             // Real reaction_x_Km;
             // Real reaction_x_Kcat;
+            // Real species_needed_for_rate;
             if ( reaction.isComplex() ){
                   String reactionRateKm = ((MichaelisMentenModelicaSimulableReaction) simReaction).getMichaelisConstantName();
                   line = "\tReal " + reactionRateKm+";\n";
                   String reactionRateKcat = ((MichaelisMentenModelicaSimulableReaction) simReaction).getCatalystConstantName();
                   line += "\tReal " + reactionRateKcat;
                   parameters.append(line + ";"+"\n");
-                  speciesDeclarations.append(getReactantsAndModifiersNeededForRate(reaction));
+                  speciesVariablesNeededForRate.addAll(getReactantsAndModifiersNeededForRate(reaction));
             }
             // Real reaction_x_K;
+            // Real species_needed_for_rate;
             else {
                 String reactionRateConstantVariable =( (MassActionModelicaSimulableReaction) simReaction).getRateConstantVariableName();
                 parameters.append("\tReal " + reactionRateConstantVariable + ";\n");
-                speciesDeclarations.append(getReactantsNeededForRate(reaction));
+                speciesVariablesNeededForRate.addAll(getReactantsNeededForRate(reaction));
             }
 
             if (reaction.isReversible()){
@@ -95,7 +97,7 @@ public class ModelicaSimulableModel extends SimulableModel {
                 else {
                     String reactionRateInvConstantVariable = ((MassActionModelicaSimulableReaction) simReaction).getRateInvConstantVariableName();
                     parameters.append("\tparameter Real " + reactionRateInvConstantVariable + ";\n");
-                    speciesDeclarations.append(getProductsNeededForRate(reaction));
+                    speciesVariablesNeededForRate.addAll(getProductsNeededForRate(reaction));
                 }
 
                 String reactionRateInvVariable = simReaction.getRateInvVariableName();
@@ -106,71 +108,82 @@ public class ModelicaSimulableModel extends SimulableModel {
 
         StringBuilder code = new StringBuilder("model Reactions\n\n");
         code.append(parameters + "\n");
-        code.append(speciesDeclarations + "\n");
+        code.append(declareSpeciesNeededForRate(speciesVariablesNeededForRate) + "\n");
         code.append(reacDeclarations + "\n");
         code.append(equation + "\n\n");
         code.append("end Reactions;\n");
         return new ModelicaCode(code.toString());
     }
 
-    private String getReactantsNeededForRate(Reaction reaction){
-        String line = "";
+    private Set<String> getReactantsNeededForRate(Reaction reaction){
+        Set<String> speciesNeeded = new HashSet<>();
         for (LinkTypeReactant linkReactant: reaction.getLinkReactantSet()){
             Species species = linkReactant.getSpecies();
+
             String speciesVariable =
                     ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
 
-            line += "\tReal "+speciesVariable;
+            String speciesDeclaration = speciesVariable;
             if (species.getName() != null) {
-                line = line + " \"" + species.getName() + "\"";
+                speciesDeclaration = speciesDeclaration + " \"" + species.getName() + "\"";
             }
-            line += ";\n";
+            speciesNeeded.add(speciesDeclaration);
         }
-        return line;
+        return speciesNeeded;
     }
 
-    private String getReactantsAndModifiersNeededForRate(Reaction reaction){
-        String line = "";
+    private Set<String> getReactantsAndModifiersNeededForRate(Reaction reaction){
+        Set<String> speciesNeeded = new HashSet<>();
         for (LinkTypeReactant linkReactant: reaction.getLinkReactantSet()){
             Species species = linkReactant.getSpecies();
+
             String speciesVariable =
                     ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
 
-            line += "\tReal "+speciesVariable;
+            String speciesDeclaration = speciesVariable;
             if (species.getName() != null) {
-                line = line + " \"" + species.getName() + "\"";
+                speciesDeclaration = speciesDeclaration + " \"" + species.getName() + "\"";
             }
-            line += ";\n";
+            speciesNeeded.add(speciesDeclaration);
         }
         for (LinkTypeModifier linkModifier: reaction.getLinkModifierSet()){
             Species species = linkModifier.getSpecies();
+
             String speciesVariable =
                     ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
 
-            line += "\tReal "+speciesVariable;
+            String speciesDeclaration = speciesVariable;
             if (species.getName() != null) {
-                line = line + " \"" + species.getName() + "\"";
+                speciesDeclaration = speciesDeclaration + " \"" + species.getName() + "\"";
             }
-            line += ";\n";
+            speciesNeeded.add(speciesDeclaration);
         }
-        return line;
+        return speciesNeeded;
     }
 
-    private String getProductsNeededForRate(Reaction reaction){
-        String line = "";
+    private Set<String> getProductsNeededForRate(Reaction reaction){
+        Set<String> speciesNeeded = new HashSet<>();
         for (LinkTypeProduct linkProduct: reaction.getLinkProductSet()){
             Species species = linkProduct.getSpecies();
 
             String speciesVariable =
                     ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
 
-            line += "\tReal "+speciesVariable;
+            String speciesDeclaration = speciesVariable;
             if (species.getName() != null) {
-                line = line + " \"" + species.getName() + "\"";
+                speciesDeclaration = speciesDeclaration + " \"" + species.getName() + "\"";
             }
-            line += ";\n";
+            speciesNeeded.add(speciesDeclaration);
         }
-        return line;
+        return speciesNeeded;
+    }
+
+    private StringBuilder declareSpeciesNeededForRate(Set<String> speciesVariableLines) {
+        StringBuilder result = new StringBuilder();
+        for (String line: speciesVariableLines) {
+            result.append("\tReal "+line + ";\n");
+        }
+        return result;
     }
 
     private ModelicaCode getModuleCode(Compartment comp) {
