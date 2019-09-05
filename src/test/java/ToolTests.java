@@ -28,7 +28,7 @@ public class ToolTests {
         String dumpPath = outputFolder + "/model_dump.xml";
         String xmlPath = inputFolder + "/quantitative.xml";
 
-        String generatedPath = outputFolder+"/generated";
+        String generatedPath = outputFolder+"/generated-from-test";
         String correctPath = outputFolder+"/correct";
 
         Set<String> kbPaths = new HashSet<>();
