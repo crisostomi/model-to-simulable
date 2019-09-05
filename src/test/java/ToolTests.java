@@ -1,7 +1,6 @@
 import DataTypes.PreconditionsException;
 import Model.Model;
 import ModelicaSimulableModel.ModelicaSimulableModel;
-import Parser.ConfigBuilder;
 import Parser.FormatNotSupportedException;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
@@ -20,14 +19,11 @@ public class ToolTests {
         String username = System.getProperty("user.name");
         String projectFolder = "/home/"+username+"/Dropbox/Tesisti/software";
         String testFolder = projectFolder + "/test-cases/dummy";
-
         String inputFolder = testFolder + "/in";
         String kbPath = inputFolder + "/pathway.sbml";
-
         String outputFolder = testFolder + "/out";
         String dumpPath = outputFolder + "/model_dump.xml";
         String xmlPath = inputFolder + "/quantitative.xml";
-
         String generatedPath = outputFolder+"/generated-from-test";
         String correctPath = outputFolder+"/correct";
 
@@ -35,8 +31,6 @@ public class ToolTests {
         kbPaths.add(kbPath);
 
         Model m = HandleModel.createModel(kbPaths);
-        ConfigBuilder c = new ConfigBuilder(m, xmlPath);
-        c.buildConfig();
         m.dump(dumpPath);
 
         Model m_loaded = Model.load(dumpPath);

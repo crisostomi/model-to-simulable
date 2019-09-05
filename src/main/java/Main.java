@@ -2,6 +2,10 @@ import Model.*;
 import ModelicaSimulableModel.*;
 import Util.CustomLogger;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,21 +21,29 @@ public class Main {
 
         String username = System.getProperty("user.name");
         String projectFolder = "/home/"+username+"/Dropbox/Tesisti/software";
-
         String testFolder = projectFolder + "/test-cases/"+TEST;
         String kbPath = testFolder + "/in/"+REACTOME_FILENAME;
-        String tsvPath = testFolder +"/in/"+ ABUNDANCES_FILENAME;
-        String logPath = testFolder + LOG_FILENAME;
+        String globalAbundancesPath = projectFolder +"/test-cases/"+ ABUNDANCES_FILENAME;
+        String logPath = testFolder +"/out/"+ LOG_FILENAME;
+        String localAbundancesPath = testFolder+"/in/"+ABUNDANCES_FILENAME;
         String dumpPath = testFolder + "/out/model_dump.xml";
         String xmlPath = testFolder + "/in/quantitative.xml";
+
         System.out.println("Model2Simulable: testing test-case "+TEST);
         CustomLogger.setup(logPath);
+
+        try {
+            Bootstrap.joinAbundances(kbPath, globalAbundancesPath, localAbundancesPath);
+            Bootstrap.buildQuantitativeFile(kbPath, xmlPath);
+        } catch (IOException | XMLStreamException | ParserConfigurationException | TransformerException e) {
+            e.printStackTrace();
+        }
 
         try {
             Set<String> kbPaths = new HashSet<>();
             kbPaths.add(kbPath);
             kbPaths.add(xmlPath);
-            kbPaths.add(tsvPath);
+            kbPaths.add(localAbundancesPath);
 
             Model m = HandleModel.createModel(kbPaths);
             CellType helaCell = new CellType("HeLa", HeLaProteins);
