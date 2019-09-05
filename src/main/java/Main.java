@@ -49,8 +49,7 @@ public class Main {
             CellType helaCell = new CellType("HeLa", HeLaProteins);
             m.setCellType(helaCell);
             m.consolidateAbundance();
-//            ConfigBuilder c = new ConfigBuilder(m, xmlPath);
-//            c.buildConfig();
+
             m.dump(dumpPath);
 
             Model m_loaded = Model.load(dumpPath);
