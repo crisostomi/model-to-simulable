@@ -16,12 +16,20 @@ public class Main {
     public static final String TEST = "meiotic-recombination";
 
     public static final double HeLaProteins = 2.3e9;
+    public static final double minInitialAmount = 0;
+    public static final double maxInitialAmount = 1.79e-11;
+    public static final double minK = 1e2;
+    public static final double maxK = 1e9;
+    public static final double minKcat = 1e-2;
+    public static final double maxKcat = 1e5;
+    public static final double minKm = 1e-8;
+    public static final double maxKm = 1;
 
     public static void main(String[] args) {
 
         String username = System.getProperty("user.name");
         String projectFolder = "/home/"+username+"/Dropbox/Tesisti/software";
-        String testFolder = projectFolder + "/test-cases/"+TEST;
+        String testFolder = "/home/scacio/Downloads/smooth-muscle";//projectFolder + "/test-cases/"+TEST;
         String kbPath = testFolder + "/in/"+REACTOME_FILENAME;
         String globalAbundancesPath = projectFolder +"/test-cases/"+ ABUNDANCES_FILENAME;
         String logPath = testFolder +"/out/"+ LOG_FILENAME;
@@ -34,11 +42,11 @@ public class Main {
 
         try {
             Bootstrap.joinAbundances(kbPath, globalAbundancesPath, localAbundancesPath);
-//            Bootstrap.buildQuantitativeFile(kbPath, xmlPath);
-        } catch (IOException | XMLStreamException e) {
+            Bootstrap.buildQuantitativeFile(kbPath, xmlPath,
+                    minInitialAmount, maxInitialAmount, minK, maxK, minKcat, maxKcat, minKm, maxKm);
+        } catch (IOException | XMLStreamException | ParserConfigurationException | TransformerException e) {
             e.printStackTrace();
         }
-
         try {
             Set<String> kbPaths = new HashSet<>();
             kbPaths.add(kbPath);
