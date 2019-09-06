@@ -13,7 +13,7 @@ public class Main {
     public static final String ABUNDANCES_FILENAME = "abundances.tsv";
     public static final String REACTOME_FILENAME = "pathway.sbml";
     public static final String LOG_FILENAME = "log.txt";
-    public static final String TEST = "urea";
+    public static final String TEST = "meiotic-recombination";
 
     public static final double HeLaProteins = 2.3e9;
 
@@ -34,8 +34,8 @@ public class Main {
 
         try {
             Bootstrap.joinAbundances(kbPath, globalAbundancesPath, localAbundancesPath);
-            Bootstrap.buildQuantitativeFile(kbPath, xmlPath);
-        } catch (IOException | XMLStreamException | ParserConfigurationException | TransformerException e) {
+//            Bootstrap.buildQuantitativeFile(kbPath, xmlPath);
+        } catch (IOException | XMLStreamException e) {
             e.printStackTrace();
         }
 
