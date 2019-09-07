@@ -30,7 +30,9 @@ public class Main {
     public static final double maxKm = 1;
 
     public static void main(String[] args) throws ParserConfigurationException, TransformerException, IOException, PreconditionsException, FormatNotSupportedException, SAXException, XMLStreamException {
-        test(TEST);
+        String username = System.getProperty("user.name");
+        String testFolder = "/home/" + username + "/Dropbox/Tesisti/software/test-cases";
+        reset(testFolder);
         System.out.println("All done!");
     }
 
@@ -47,14 +49,14 @@ public class Main {
         String knowledgeFolder = projectFolder + "/knowledge";
         String testFolder = projectFolder + "/test-cases/" + test;
         String kbPath = testFolder + "/in/" + REACTOME_FILENAME;
-        String globalAbundancesPath = knowledgeFolder + "/test-cases/" + ABUNDANCES_FILENAME;
-        String logPath = testFolder + "/out/" + LOG_FILENAME;
+        String globalAbundancesPath = knowledgeFolder + "/" + ABUNDANCES_FILENAME;
         String localAbundancesPath = testFolder + "/in/" + ABUNDANCES_FILENAME;
         String dumpPath = testFolder + "/out/model_dump.xml";
         String xmlPath = testFolder + "/in/quantitative.xml";
+        String logPath = testFolder + "/out/" + LOG_FILENAME;
+        CustomLogger.setup(logPath);
 
         System.out.println("Model2Simulable: testing test-case " + test);
-        CustomLogger.setup(logPath);
 
         try {
             Bootstrap.joinAbundances(kbPath, globalAbundancesPath, localAbundancesPath);
