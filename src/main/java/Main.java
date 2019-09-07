@@ -13,11 +13,11 @@ public class Main {
     public static final String ABUNDANCES_FILENAME = "abundances.tsv";
     public static final String REACTOME_FILENAME = "pathway.sbml";
     public static final String LOG_FILENAME = "log.txt";
-    public static final String TEST = "meiotic-recombination";
+    public static final String TEST = "urea";
 
     public static final double HeLaProteins = 2.3e9;
     public static final double minInitialAmount = 0;
-    public static final double maxInitialAmount = 1.79e-11;
+    public static final double maxInitialAmount = 1.79e-12;
     public static final double minK = 1e2;
     public static final double maxK = 1e9;
     public static final double minKcat = 1e-2;
@@ -29,7 +29,7 @@ public class Main {
 
         String username = System.getProperty("user.name");
         String projectFolder = "/home/"+username+"/Dropbox/Tesisti/software";
-        String testFolder = "/home/scacio/Downloads/smooth-muscle";//projectFolder + "/test-cases/"+TEST;
+        String testFolder = projectFolder + "/test-cases/"+TEST;
         String kbPath = testFolder + "/in/"+REACTOME_FILENAME;
         String globalAbundancesPath = projectFolder +"/test-cases/"+ ABUNDANCES_FILENAME;
         String logPath = testFolder +"/out/"+ LOG_FILENAME;
