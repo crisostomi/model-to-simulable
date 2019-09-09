@@ -45,32 +45,36 @@ public class MichaelisMentenModelicaSimulableReaction extends ModelicaSimulableR
 
     @Override
     public ModelicaCode getRateFormula() {
-        Set<LinkTypeModifier> modifierLinks = this.getReactionInstantiate().getLinkModifierSet();
-        Set<LinkTypeReactant> reactantLinks = this.getReactionInstantiate().getLinkReactantSet();
+        Reaction reaction = this.getReactionInstantiate();
+        Set<Species> modifiers = reaction.getModifiers();
+        Set<Species> reactants = reaction.getReactants();
         StringBuilder code = new StringBuilder();
 
-        StringBuilder enzymes = new StringBuilder();
-        for (LinkTypeModifier modifierLink: modifierLinks){
-            Species modifier = modifierLink.getSpecies();
-            ModelicaSimulableSpecies simulableSpecies = (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(modifier.getId());
-            String modifierVariable = simulableSpecies.getVariableName();
-            enzymes.append(modifierVariable+"*");
-        }
-        enzymes = enzymes.deleteCharAt(enzymes.length()-1);
-
+        // prodotto dei substrati
         StringBuilder substrates = new StringBuilder();
-        for (LinkTypeReactant reactantLink: reactantLinks){
-            Species reactant = reactantLink.getSpecies();
+        for (Species reactant: reactants){
             ModelicaSimulableSpecies simulableSpecies = (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(reactant.getId());
             String reactantVariable = simulableSpecies.getVariableName();
             substrates.append(reactantVariable+"*");
         }
         substrates = substrates.deleteCharAt(substrates.length()-1);
 
-
-        code.append("("+this.getCatalystConstantName()+"*"+enzymes+"*"+substrates+ ")/" +
-                "("+this.getMichaelisConstantName()+"+"+substrates+")");
-
+        if ( reaction.getRateParameters().get(RateParameter.Vmax).getLowerBound() != 0 ){
+            code.append("("+this.getSaturationConstantName()+"*"+substrates+ ")/" +
+                    "("+this.getMichaelisConstantName()+"+"+substrates+")");
+        }
+        else{
+            // prodotto degli enzimi
+            StringBuilder enzymes = new StringBuilder();
+            for (Species modifier: modifiers){
+                ModelicaSimulableSpecies simulableSpecies = (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(modifier.getId());
+                String modifierVariable = simulableSpecies.getVariableName();
+                enzymes.append(modifierVariable+"*");
+            }
+            enzymes = enzymes.deleteCharAt(enzymes.length()-1);
+            code.append("("+this.getCatalystConstantName()+"*"+enzymes+"*"+substrates+ ")/" +
+                    "("+this.getMichaelisConstantName()+"+"+substrates+")");
+        }
         return new ModelicaCode(code.toString());
     }
 
@@ -80,6 +84,10 @@ public class MichaelisMentenModelicaSimulableReaction extends ModelicaSimulableR
 
     public String getCatalystConstantName(){
         return this.getReactionInstantiate().getId() + "_Kcat";
+    }
+
+    public String getSaturationConstantName(){
+        return this.getReactionInstantiate().getId() + "_Vmax";
     }
 
     public ModelicaParameter getMichaelisParameter() {

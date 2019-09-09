@@ -17,7 +17,7 @@ public class Main {
     public static final String ABUNDANCES_FILENAME = "abundances.tsv";
     public static final String REACTOME_FILENAME = "pathway.sbml";
     public static final String LOG_FILENAME = "log.txt";
-    public static final String TEST = "sumoylation";
+    public static final String TEST = "estrogen-biosynthesis";
 
     public static final double HeLaProteins = 2.3e9;
     public static final double minInitialAmount = 0;
@@ -32,7 +32,7 @@ public class Main {
     public static void main(String[] args) throws ParserConfigurationException, TransformerException, IOException, PreconditionsException, FormatNotSupportedException, SAXException, XMLStreamException {
         String username = System.getProperty("user.name");
         String testFolder = "/home/" + username + "/Dropbox/Tesisti/software/test-cases";
-        reset(testFolder);
+        test(TEST);
         System.out.println("All done!");
     }
 
