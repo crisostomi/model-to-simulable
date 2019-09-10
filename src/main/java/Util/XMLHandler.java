@@ -16,12 +16,12 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class XMLHandler {
 
-    public static void buildParametersXML(List<UndefinedModelicaParameter> params, String path)
+    public static void buildParametersXML(Set<UndefinedModelicaParameter> params, String path)
             throws ParserConfigurationException,
                     TransformerException
     {
@@ -55,7 +55,7 @@ public class XMLHandler {
         return result;
     }
 
-    private static Document buildParametersDocument(List<UndefinedModelicaParameter> params)
+    private static Document buildParametersDocument(Set<UndefinedModelicaParameter> params)
             throws ParserConfigurationException {
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

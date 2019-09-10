@@ -1,45 +1,31 @@
 package ModelicaSimulableModel;
 
+import java.util.*;
 import DataTypes.*;
 import Model.*;
-import Model.LinkType.LinkTypeModifier;
-import Model.LinkType.LinkTypeProduct;
-import Model.LinkType.LinkTypeReactant;
 import SimulableModel.*;
-import SimulableModel.Link.LinkSimulableSpeciesComprises;
+import SimulableModel.Link.*;
 
-import java.util.HashSet;
-import java.util.Set;
 
 public class MichaelisMentenModelicaSimulableReaction extends ModelicaSimulableReaction {
 
     public MichaelisMentenModelicaSimulableReaction(Reaction reaction, SimulableModel model) throws PreconditionsException {
         super(reaction);
+        assert reaction.isComplex();
 
         Set<Species> speciesInvolved = new HashSet<>();
-        for (LinkTypeReactant l: reaction.getLinkReactantSet()) {
-            Species s = l.getSpecies();
-            speciesInvolved.add(s);
-        }
+        speciesInvolved.addAll(reaction.getReactants());
+        speciesInvolved.addAll(reaction.getProducts());
+        speciesInvolved.addAll(reaction.getModifiers());
+        
 
-        for (LinkTypeProduct l: reaction.getLinkProductSet()) {
-            Species s = l.getSpecies();
-            speciesInvolved.add(s);
-        }
-
-        for (LinkTypeModifier l: reaction.getLinkModifierSet()) {
-            Species s = l.getSpecies();
-            speciesInvolved.add(s);
-        }
-
-        for (Species s: speciesInvolved) {
-            String sId = s.getId();
-            SimulableSpecies ss = model.getSimulableSpecies(sId);
-            if (ss == null) {
-                ss = new ModelicaSimulableSpecies(s);
+        for (Species species: speciesInvolved) {
+            SimulableSpecies simulableSpecies = model.getSimulableSpecies(species.getId());
+            if (simulableSpecies == null) {
+                simulableSpecies = new ModelicaSimulableSpecies(species);
             }
 
-            LinkSimulableSpeciesComprises.insertLink(model, ss);
+            LinkSimulableSpeciesComprises.insertLink(model, simulableSpecies);
         }
     }
 
@@ -59,7 +45,7 @@ public class MichaelisMentenModelicaSimulableReaction extends ModelicaSimulableR
         }
         substrates = substrates.deleteCharAt(substrates.length()-1);
 
-        if ( reaction.getRateParameters().get(RateParameter.Vmax).getLowerBound() != 0 ){
+        if (this.usingVmax()){
             code.append("("+this.getSaturationConstantName()+"*"+substrates+ ")/" +
                     "("+this.getMichaelisConstantName()+"+"+substrates+")");
         }
@@ -110,12 +96,173 @@ public class MichaelisMentenModelicaSimulableReaction extends ModelicaSimulableR
         } else {
             return new UndefinedModelicaParameter(catalystName, r.getRate(RateParameter.Kcat).getLowerBound(), r.getRate(RateParameter.Kcat).getUpperBound());
         }
+    }
 
+    public ModelicaParameter getSaturationParameter(){
+        String saturationName = this.getSaturationConstantName();
+        Reaction r = this.getReactionInstantiate();
 
+        if (r.getRate(RateParameter.Vmax).getLowerBound() == r.getRate(RateParameter.Vmax).getUpperBound()) {
+            return new DefinedModelicaParameter(saturationName, r.getRate(RateParameter.Vmax).getLowerBound());
+        } else {
+            return new UndefinedModelicaParameter(saturationName, r.getRate(RateParameter.Vmax).getLowerBound(), r.getRate(RateParameter.Vmax).getUpperBound());
+        }
+    }
+
+    private boolean usingVmax() {
+        Reaction reaction = this.getReactionInstantiate();
+        return reaction.getRateParameters().get(RateParameter.Vmax).getLowerBound() != 0;
     }
 
     @Override
     public ModelicaCode getRateInvFormula() {
         return null;
+    }
+
+    @Override
+    public Set<Species> getSpeciesNeededForRate() {
+        Reaction reaction = this.getReactionInstantiate();
+        Set<Species> speciesNeededForRate = new HashSet<>();
+        speciesNeededForRate.addAll(reaction.getReactants());
+        speciesNeededForRate.addAll(reaction.getModifiers());
+
+        return speciesNeededForRate;
+    }
+
+    @Override
+    public Set<Species> getSpeciesNeededForInverseRate() {
+        return null;
+    }
+
+    @Override
+    public StringBuilder getConstantsDeclarationsNeededForRate() {
+        Reaction reaction = this.getReactionInstantiate();
+        StringBuilder declarations = new StringBuilder();
+
+        String reactionRateKm = this.getMichaelisConstantName();
+        declarations.append("\tReal " + reactionRateKm + ";\n");
+
+        if (this.usingVmax()) {
+            String reactionRateVmax = this.getSaturationConstantName();
+            declarations.append("\tReal " + reactionRateVmax + ";\n");
+        } else {
+            String reactionRateKcat = this.getCatalystConstantName();
+            declarations.append("\tReal " + reactionRateKcat + ";\n");
+        }
+
+        return declarations;
+    }
+
+    @Override
+    public StringBuilder getConstantsDeclarationsNeededForInverseRate() {
+        return null;
+    }
+
+    @Override
+    public StringBuilder getParametersDeclarations() {
+        StringBuilder declarations = new StringBuilder();
+        Reaction reaction = this.getReactionInstantiate();
+
+        String michaelisConstantName = this.getMichaelisConstantName();
+        String line = "\tparameter Real " + michaelisConstantName;
+        ModelicaParameter Km = this.getMichaelisParameter();
+        if (Km instanceof DefinedModelicaParameter) {
+            line += " = " + ((DefinedModelicaParameter) Km).getValue();
+        }
+        line += ";\n";
+        declarations.append(line);
+
+        if (this.usingVmax()) {
+            String saturationConstantName = this.getSaturationConstantName();
+            line = "\tparameter Real " + saturationConstantName;
+            ModelicaParameter Vmax = this.getSaturationParameter();
+            if (Vmax instanceof DefinedModelicaParameter) {
+                line += " = " + ((DefinedModelicaParameter) Vmax).getValue();
+            }
+            line += ";\n";
+        } else {
+            String catalystConstantName = this.getCatalystConstantName();
+            line = "\tparameter Real " + catalystConstantName;
+            ModelicaParameter Kcat = this.getCatalystParameter();
+            if (Kcat instanceof DefinedModelicaParameter) {
+                line += " = " + ((DefinedModelicaParameter) Kcat).getValue();
+            }
+            line += ";\n";
+        }
+
+        declarations.append(line);
+
+        if (reaction.isReversible()) {
+            System.out.println("WARNING! Complex reversible reaction found");
+        }
+
+        return declarations;
+    }
+
+    @Override
+    public Set<UndefinedModelicaParameter> getUndefinedParameters() {
+        Set<UndefinedModelicaParameter> params = new HashSet<>();
+        ModelicaParameter michaelisParameter = this.getMichaelisParameter();
+        if (michaelisParameter instanceof UndefinedModelicaParameter) {
+            params.add((UndefinedModelicaParameter) michaelisParameter);
+        }
+
+        if (this.usingVmax()) {
+            ModelicaParameter saturationParameter = this.getSaturationParameter();
+            if (saturationParameter instanceof UndefinedModelicaParameter) {
+                params.add((UndefinedModelicaParameter) saturationParameter);
+            }
+        } else {
+            ModelicaParameter catalystParameter = this.getCatalystParameter();
+            if (catalystParameter instanceof UndefinedModelicaParameter) {
+                params.add((UndefinedModelicaParameter) catalystParameter);
+            }
+        }
+
+        return params;
+    }
+
+    @Override
+    public StringBuilder getLinkingReactionParameterCode(String reactionModule, String parameterModule) {
+        StringBuilder equations = new StringBuilder();
+        Reaction reaction = this.getReactionInstantiate();
+
+        // reactions.reaction_X_Km = parameters.reaction_X_Km
+        // reactions.reaction_X_KCat = parameters.reaction_X_Kcat
+        String michaelisMentenConstantName = this.getMichaelisConstantName();
+
+        equations.append("\t\t"+
+                reactionModule + "." + michaelisMentenConstantName +
+                " = " +
+                parameterModule + "." + michaelisMentenConstantName +
+                ";\n"
+        );
+
+        if (this.usingVmax()) {
+            String saturationConstantName = this.getSaturationConstantName();
+
+            equations.append("\t\t"+
+                    reactionModule + "." + saturationConstantName +
+                    " = " +
+                    parameterModule + "." + saturationConstantName +
+                    ";\n"
+            );
+
+        } else {
+            String catalystConstantName = this.getCatalystConstantName();
+
+            equations.append("\t\t"+
+                    reactionModule + "." + catalystConstantName +
+                    " = " +
+                    parameterModule + "." + catalystConstantName +
+                    ";\n"
+            );
+        }
+        if (reaction.isReversible()) {
+            //complex reversible code
+            System.out.println("WARNING! Complex reversible reaction found");
+        }
+
+        return equations;
     }
 }

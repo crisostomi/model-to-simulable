@@ -1,21 +1,17 @@
 package ModelicaSimulableModel;
 
+import java.util.*;
 import DataTypes.*;
-import Model.LinkType.LinkTypeModifier;
+import Model.*;
+import Model.LinkType.*;
 import SimulableModel.*;
-
-import java.util.HashSet;
-import java.util.Set;
-import Model.LinkType.LinkTypeProduct;
-import Model.LinkType.LinkTypeReactant;
-import Model.Reaction;
-import Model.Species;
-import SimulableModel.Link.LinkSimulableSpeciesComprises;
+import SimulableModel.Link.*;
 
 
 public class MassActionModelicaSimulableReaction extends ModelicaSimulableReaction{
     public MassActionModelicaSimulableReaction(Reaction reaction, SimulableModel model) throws PreconditionsException {
         super(reaction);
+        assert !reaction.isComplex();
 
         Set<Species> speciesInvolved = new HashSet<>();
         for (LinkTypeReactant l: reaction.getLinkReactantSet()) {
@@ -77,6 +73,94 @@ public class MassActionModelicaSimulableReaction extends ModelicaSimulableReacti
 
         }
         return new ModelicaCode(code.toString());
+    }
+
+    @Override
+    public Set<Species> getSpeciesNeededForRate() {
+        Reaction reaction = this.getReactionInstantiate();
+        return reaction.getReactants();
+    }
+
+    @Override
+    public Set<Species> getSpeciesNeededForInverseRate() {
+        Reaction reaction = this.getReactionInstantiate();
+        return reaction.getProducts();
+    }
+
+    @Override
+    public StringBuilder getConstantsDeclarationsNeededForRate() {
+        String reactionRateConstantVariable = this.getRateConstantVariableName();
+        return new StringBuilder("\tReal " + reactionRateConstantVariable + ";\n");
+    }
+
+    @Override
+    public StringBuilder getConstantsDeclarationsNeededForInverseRate() {
+        String reactionRateInvConstantVariable = this.getRateInvConstantVariableName();
+        return new StringBuilder("\tparameter Real " + reactionRateInvConstantVariable + ";\n");
+    }
+
+    @Override
+    public StringBuilder getParametersDeclarations() {
+        StringBuilder declarations = new StringBuilder();
+        Reaction reaction = this.getReactionInstantiate();
+
+        String rateConstantVariable = this.getRateConstantVariableName();
+        String line = "parameter Real " + rateConstantVariable;
+        ModelicaParameter rateModelicaParameter = this.getParameter();
+        if (rateModelicaParameter instanceof DefinedModelicaParameter) {
+            line = line + " = " + ((DefinedModelicaParameter) rateModelicaParameter).getValue();
+        }
+        declarations.append("\t" + line + ";\n");
+
+
+        if (reaction.isReversible()) {
+            String rateInvConstantVariable = this.getRateInvVariableName();
+            line = "parameter Real " + rateInvConstantVariable;
+            ModelicaParameter rateInvModelicaParameter = this.getInvParameter();
+            if (rateInvModelicaParameter instanceof DefinedModelicaParameter) {
+                line = line + " = " + ((DefinedModelicaParameter) rateInvModelicaParameter).getValue();
+            }
+
+            declarations.append("\t" + line + ";\n");
+        }
+        return declarations;
+    }
+
+    @Override
+    public Set<UndefinedModelicaParameter> getUndefinedParameters() {
+        Set<UndefinedModelicaParameter> params = new HashSet<>();
+        ModelicaParameter reactionParam = this.getParameter();
+        if (reactionParam instanceof UndefinedModelicaParameter) {
+            params.add((UndefinedModelicaParameter) reactionParam);
+        }
+
+        return params;
+    }
+
+    @Override
+    public StringBuilder getLinkingReactionParameterCode(String reactionModule, String parameterModule) {
+        StringBuilder equations = new StringBuilder();
+        Reaction reaction = this.getReactionInstantiate();
+
+        String reactionRateConstantVariable = this.getRateConstantVariableName();
+        equations.append("\t\t"+
+                reactionModule + "." + reactionRateConstantVariable +
+                " = " +
+                parameterModule + "." + reactionRateConstantVariable +
+                ";\n"
+        );
+        if (reaction.isReversible()) {
+            String reactionRateInvConstantVariable = this.getRateInvConstantVariableName();
+            equations.append("\t\t"+
+                    reactionModule + "." + reactionRateInvConstantVariable +
+                    " = " +
+                    parameterModule + "." + reactionRateInvConstantVariable +
+                    ";\n"
+            );
+        }
+
+
+        return equations;
     }
 
     public String getRateVariableName() {
