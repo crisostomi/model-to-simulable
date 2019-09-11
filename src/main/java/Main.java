@@ -23,7 +23,7 @@ public class Main {
     static final double HeLaSize = 3e-12;
     
     static final double minInitialAmount = 0;
-    static final double maxInitialAmount = 1.79e-12;
+    static final double maxInitialAmount = 6.62e-5;
     static final double minK = 1e2;
     static final double maxK = 1e9;
     static final double minKcat = 1e-2;
