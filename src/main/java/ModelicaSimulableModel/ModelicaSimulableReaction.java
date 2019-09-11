@@ -4,11 +4,26 @@ import java.util.*;
 import DataTypes.*;
 import Model.*;
 import SimulableModel.*;
+import SimulableModel.Link.LinkSimulableSpeciesComprises;
 
 public abstract class ModelicaSimulableReaction extends SimulableReaction {
 
-    public ModelicaSimulableReaction(Reaction reaction) {
+    public ModelicaSimulableReaction(Reaction reaction, ModelicaSimulableModel model) throws PreconditionsException {
         super(reaction);
+        Set<Species> speciesInvolved = new HashSet<>();
+        speciesInvolved.addAll(reaction.getReactants());
+        speciesInvolved.addAll(reaction.getProducts());
+        speciesInvolved.addAll(reaction.getModifiers());
+
+
+        for (Species species: speciesInvolved) {
+            SimulableSpecies simulableSpecies = model.getSimulableSpecies(species.getId());
+            if (simulableSpecies == null) {
+                simulableSpecies = new ModelicaSimulableSpecies(species);
+            }
+
+            LinkSimulableSpeciesComprises.insertLink(model, simulableSpecies);
+        }
     }
 
     public abstract ModelicaCode getRateFormula();

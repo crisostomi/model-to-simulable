@@ -9,24 +9,9 @@ import SimulableModel.Link.*;
 
 public class MichaelisMentenModelicaSimulableReaction extends ModelicaSimulableReaction {
 
-    public MichaelisMentenModelicaSimulableReaction(Reaction reaction, SimulableModel model) throws PreconditionsException {
-        super(reaction);
+    public MichaelisMentenModelicaSimulableReaction(Reaction reaction, ModelicaSimulableModel model) throws PreconditionsException {
+        super(reaction, model);
         assert reaction.isComplex();
-
-        Set<Species> speciesInvolved = new HashSet<>();
-        speciesInvolved.addAll(reaction.getReactants());
-        speciesInvolved.addAll(reaction.getProducts());
-        speciesInvolved.addAll(reaction.getModifiers());
-        
-
-        for (Species species: speciesInvolved) {
-            SimulableSpecies simulableSpecies = model.getSimulableSpecies(species.getId());
-            if (simulableSpecies == null) {
-                simulableSpecies = new ModelicaSimulableSpecies(species);
-            }
-
-            LinkSimulableSpeciesComprises.insertLink(model, simulableSpecies);
-        }
     }
 
     @Override
@@ -40,7 +25,7 @@ public class MichaelisMentenModelicaSimulableReaction extends ModelicaSimulableR
         StringBuilder substrates = new StringBuilder();
         for (Species reactant: reactants){
             ModelicaSimulableSpecies simulableSpecies = (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(reactant.getId());
-            String reactantVariable = simulableSpecies.getVariableName();
+            String reactantVariable = simulableSpecies.getConcentrationVariableName();
             substrates.append(reactantVariable+"*");
         }
         substrates = substrates.deleteCharAt(substrates.length()-1);
@@ -54,7 +39,7 @@ public class MichaelisMentenModelicaSimulableReaction extends ModelicaSimulableR
             StringBuilder enzymes = new StringBuilder();
             for (Species modifier: modifiers){
                 ModelicaSimulableSpecies simulableSpecies = (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(modifier.getId());
-                String modifierVariable = simulableSpecies.getVariableName();
+                String modifierVariable = simulableSpecies.getConcentrationVariableName();
                 enzymes.append(modifierVariable+"*");
             }
             enzymes = enzymes.deleteCharAt(enzymes.length()-1);

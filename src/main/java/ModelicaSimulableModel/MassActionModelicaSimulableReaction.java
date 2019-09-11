@@ -9,35 +9,9 @@ import SimulableModel.Link.*;
 
 
 public class MassActionModelicaSimulableReaction extends ModelicaSimulableReaction{
-    public MassActionModelicaSimulableReaction(Reaction reaction, SimulableModel model) throws PreconditionsException {
-        super(reaction);
+    public MassActionModelicaSimulableReaction(Reaction reaction, ModelicaSimulableModel model) throws PreconditionsException {
+        super(reaction, model);
         assert !reaction.isComplex();
-
-        Set<Species> speciesInvolved = new HashSet<>();
-        for (LinkTypeReactant l: reaction.getLinkReactantSet()) {
-            Species s = l.getSpecies();
-            speciesInvolved.add(s);
-        }
-
-        for (LinkTypeProduct l: reaction.getLinkProductSet()) {
-            Species s = l.getSpecies();
-            speciesInvolved.add(s);
-        }
-
-        for (LinkTypeModifier l: reaction.getLinkModifierSet()) {
-            Species s = l.getSpecies();
-            speciesInvolved.add(s);
-        }
-
-        for (Species s: speciesInvolved) {
-            String sId = s.getId();
-            SimulableSpecies ss = model.getSimulableSpecies(sId);
-            if (ss == null) {
-                ss = new ModelicaSimulableSpecies(s);
-            }
-
-            LinkSimulableSpeciesComprises.insertLink(model, ss);
-        }
     }
 
     @Override
@@ -51,7 +25,7 @@ public class MassActionModelicaSimulableReaction extends ModelicaSimulableReacti
                     (ModelicaSimulableSpecies)this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(s_id);
 
             int stoich = link.getStoichiometry();
-            String speciesVariable = ss.getVariableName();
+            String speciesVariable = ss.getConcentrationVariableName();
             code.append("*"+speciesVariable+"^"+stoich);
         }
         return new ModelicaCode(code.toString());
@@ -68,7 +42,7 @@ public class MassActionModelicaSimulableReaction extends ModelicaSimulableReacti
                     (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(s_id);
 
             int stoich = link.getStoichiometry();
-            String speciesVariable = ss.getVariableName();
+            String speciesVariable = ss.getConcentrationVariableName();
             code.append("*" + speciesVariable + "^" + stoich);
 
         }

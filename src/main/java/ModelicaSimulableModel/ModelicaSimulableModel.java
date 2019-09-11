@@ -13,13 +13,17 @@ public class ModelicaSimulableModel extends SimulableModel {
     public ModelicaSimulableModel(Model model) throws PreconditionsException {
         super(model);
         for (Compartment compartment: model.getCompartments()){
-
             for (Reaction reaction: compartment.getReactions()){
-
                 if (!reaction.getReactants().isEmpty() || !reaction.getProducts().isEmpty()) {
                     ModelicaSimulableReaction simulableReaction;
                     if (reaction.isComplex()){
-                        simulableReaction = new MichaelisMentenModelicaSimulableReaction(reaction, this);
+                        if (reaction.getReactants().size() > 1 ||
+                                reaction.getProducts().size() > 1 ||
+                                reaction.getModifiers().size() > 1) {
+                            simulableReaction = new ConvenienceModelicaSimulableReaction(reaction, this);
+                        } else {
+                            simulableReaction = new MichaelisMentenModelicaSimulableReaction(reaction, this);
+                        }
                     }
                     else {
                         simulableReaction = new MassActionModelicaSimulableReaction(reaction, this);
@@ -54,7 +58,7 @@ public class ModelicaSimulableModel extends SimulableModel {
             if (species instanceof Protein) {
                 Protein p = (Protein) species;
                 if (p.getAbundance() != null) {
-                    constraints.put(simulableSpecies.getAverageVariableName(), p.getAbundance());
+                    constraints.put(simulableSpecies.getAverageConcentrationVariableName(), p.getAbundance());
                 }
             }
         }
@@ -145,7 +149,7 @@ public class ModelicaSimulableModel extends SimulableModel {
         StringBuilder result = new StringBuilder();
         for (Species species: speciesNeededForRate){
             String speciesVariable =
-                    ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getVariableName();
+                    ((ModelicaSimulableSpecies)this.getSimulableSpecies(species.getId())).getConcentrationVariableName();
 
             String speciesDeclaration = "\tReal " + speciesVariable;
             if (species.getName() != null) {
@@ -170,7 +174,7 @@ public class ModelicaSimulableModel extends SimulableModel {
             ModelicaSimulableSpecies simSpecies = (ModelicaSimulableSpecies)this.getSimulableSpecies(s_id);
             if (simSpecies != null) {
                 // Real species_X "X";
-                String speciesVariable = simSpecies.getVariableName();
+                String speciesVariable = simSpecies.getConcentrationVariableName();
                 String line = "\tReal " + speciesVariable;
                 if (species.getName() != null){
                     line = line + " \"" + species.getName() + "\"";
@@ -181,7 +185,7 @@ public class ModelicaSimulableModel extends SimulableModel {
                 reactionsInvolvedInComp.addAll(reactions);
 
                 // Real species_X_init;
-                String speciesIAVariable = simSpecies.getInitialAmountVariableName();
+                String speciesIAVariable = simSpecies.getInitialConcentrationVariableName();
                 parameters.append("\tReal "+speciesIAVariable+";\n");
 
                 // species_X = species_X_init
@@ -209,6 +213,8 @@ public class ModelicaSimulableModel extends SimulableModel {
             declarations.append(line+";\n");
         }
 
+        equation.append(getCheckAboveZeroCode(comp));
+
         StringBuilder code = new StringBuilder();
         String modelName = this.getModuleName(comp);
         code.append("model "+modelName+"\n\n");
@@ -218,6 +224,24 @@ public class ModelicaSimulableModel extends SimulableModel {
         code.append(equation + "\n\n");
         code.append("end " + modelName + ";\n\n");
         return new ModelicaCode(code.toString());
+    }
+
+    private StringBuilder getCheckAboveZeroCode(Compartment comp) {
+        StringBuilder equation = new StringBuilder();
+
+        for(Species species: comp.getSpecies()){
+            String s_id = species.getId();
+            ModelicaSimulableSpecies simSpecies = (ModelicaSimulableSpecies)this.getSimulableSpecies(s_id);
+            if (simSpecies != null) {
+                String variable = simSpecies.getConcentrationVariableName();
+                equation.append(
+                        "\t\t"+ "when " + variable + " < 0 then\n"+
+                        "\t\t\t"+"reinit(" + variable + ", 0);\n"+
+                        "\t\tend when;\n"
+                );
+            }
+        }
+        return equation;
     }
 
     private ModelicaCode getLinkingModule() {
@@ -266,9 +290,9 @@ public class ModelicaSimulableModel extends SimulableModel {
             Compartment comp = simulableSpecies.getSpeciesInstantiate().getLinkSpeciesCompartment().getCompartment();
             equations.append(
                     "\t\t" +
-                            comp.getId() + "." + simulableSpecies.getVariableName() +
+                            comp.getId() + "." + simulableSpecies.getConcentrationVariableName() +
                             " = " +
-                            "reactions" + "." + simulableSpecies.getVariableName() +
+                            "reactions" + "." + simulableSpecies.getConcentrationVariableName() +
                             ";\n"
             );
         }
@@ -311,7 +335,7 @@ public class ModelicaSimulableModel extends SimulableModel {
 
                 if (simSpecies != null) {
                     // compartment_X.species_Y_init = parameters.species_Y_init;
-                    String speciesIAVariable = simSpecies.getInitialAmountVariableName();
+                    String speciesIAVariable = simSpecies.getInitialConcentrationVariableName();
                     equations.append("\t\t"+
                             comp.getId() + "." + speciesIAVariable +
                             " = " +
@@ -356,9 +380,9 @@ public class ModelicaSimulableModel extends SimulableModel {
                 if (simulableSpecies != null) {
                     // compartment_X.species_Y = monitor.species_Y;
                     equations.append("\t\t" +
-                            compartment.getId() + "." + simulableSpecies.getVariableName() +
+                            compartment.getId() + "." + simulableSpecies.getConcentrationVariableName() +
                             " = "+
-                            "monitor" + "." + simulableSpecies.getVariableName() + ";\n"
+                            "monitor" + "." + simulableSpecies.getConcentrationVariableName() + ";\n"
                     );
                 }
             }
@@ -392,7 +416,7 @@ public class ModelicaSimulableModel extends SimulableModel {
         ModelicaSimulableSpecies simulableSpecies =
                 (ModelicaSimulableSpecies) this.getSimulableSpecies(species.getId());
 
-        String speciesIAVariable = simulableSpecies.getInitialAmountVariableName();
+        String speciesIAVariable = simulableSpecies.getInitialConcentrationVariableName();
         String line = "parameter Real " + speciesIAVariable;
         ModelicaParameter speciesModelicaParameter = simulableSpecies.getParameter();
         if (speciesModelicaParameter instanceof DefinedModelicaParameter) {
@@ -424,13 +448,13 @@ public class ModelicaSimulableModel extends SimulableModel {
                             (ModelicaSimulableSpecies) this.getSimulableSpecies(species.getId());
 
                     if (simulableSpecies != null) {
-                        declarations.append("\tReal " + simulableSpecies.getVariableName() + ";\n");
-                        declarations.append("\tReal " + simulableSpecies.getAverageVariableName() + ";\n");
-                        initialEquation.append("\t\t" + simulableSpecies.getAverageVariableName() + " = 0;\n");
+                        declarations.append("\tReal " + simulableSpecies.getConcentrationVariableName() + ";\n");
+                        declarations.append("\tReal " + simulableSpecies.getAverageConcentrationVariableName() + ";\n");
+                        initialEquation.append("\t\t" + simulableSpecies.getAverageConcentrationVariableName() + " = 0;\n");
                         equation.append(
-                                "\t\tder(" + simulableSpecies.getAverageVariableName() + ")" +
+                                "\t\tder(" + simulableSpecies.getAverageConcentrationVariableName() + ")" +
                                 " = " +
-                                "1" + "/" + getSimulationTimeVariableName() + " * " + simulableSpecies.getVariableName()
+                                "1" + "/" + getSimulationTimeVariableName() + " * " + simulableSpecies.getConcentrationVariableName()
                                 + ";\n"
                         );
                     }

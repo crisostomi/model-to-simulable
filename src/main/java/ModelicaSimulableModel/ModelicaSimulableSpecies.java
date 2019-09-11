@@ -59,7 +59,7 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
 
     public ModelicaParameter getParameter() {
         Species s = this.getSpeciesInstantiate();
-        String parameterName = this.getInitialAmountVariableName();
+        String parameterName = this.getInitialConcentrationVariableName();
 
         if (s.getInitialAmount().getLowerBound() == s.getInitialAmount().getUpperBound()) {
             return new DefinedModelicaParameter(parameterName, s.getInitialAmount().getLowerBound());
@@ -98,15 +98,15 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
 
     }
 
-    public String getVariableName() {
-        return this.getSpeciesInstantiate().getId();
+    public String getConcentrationVariableName() {
+        return this.getSpeciesInstantiate().getId() + "_conc";
     }
 
-    public String getInitialAmountVariableName() {
-        return getVariableName() + "_init";
+    public String getInitialConcentrationVariableName() {
+        return getConcentrationVariableName() + "_init";
     }
 
-    public String getAverageVariableName() {
-        return getVariableName() + "_average";
+    public String getAverageConcentrationVariableName() {
+        return getConcentrationVariableName() + "_avg";
     }
 }
