@@ -109,4 +109,13 @@ public class ModelicaSimulableSpecies extends SimulableSpecies {
     public String getAverageConcentrationVariableName() {
         return getConcentrationVariableName() + "_avg";
     }
+
+    public String getErrorVariableName() {
+        return getConcentrationVariableName() + "_error";
+    }
+
+    public String getAbundanceVariableName() {
+        assert this.getSpeciesInstantiate() instanceof Protein;
+        return getConcentrationVariableName() + "_abundance";
+    }
 }

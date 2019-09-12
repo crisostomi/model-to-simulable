@@ -28,13 +28,13 @@ public class XMLHandler {
         writeDocument(buildParametersDocument(params), path);
     }
 
-    public static void buildProteinConstraintsXML(Map<String, Double> abundances, String path)
+    public static void buildProteinConstraintsXML(Set<UndefinedModelicaParameter> constraints, String path)
             throws ParserConfigurationException, TransformerException
     {
-        writeDocument(buildProteinConstraintsDocument(abundances), path);
+        writeDocument(buildProteinConstraintsDocument(constraints), path);
     }
 
-    private static Document buildProteinConstraintsDocument(Map<String, Double> abundances) throws ParserConfigurationException {
+    private static Document buildProteinConstraintsDocument(Set<UndefinedModelicaParameter> abundances) throws ParserConfigurationException {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document result = dBuilder.newDocument();
@@ -42,12 +42,12 @@ public class XMLHandler {
         Node constraints = result.createElement("constraints");
         result.appendChild(constraints);
 
-        for (Map.Entry<String, Double> ab: abundances.entrySet()) {
-            String variableName = ab.getKey();
-            double abundance = ab.getValue();
-            Element element = result.createElement("protein");
+        for (UndefinedModelicaParameter ab: abundances) {
+            String variableName = ab.getParameterName();
+            Element element = result.createElement("constraint");
             element.setAttribute("name", variableName);
-            element.setAttribute("abundance", String.valueOf(abundance));
+            element.setAttribute("lowerBound", String.valueOf(ab.getLowerBound()));
+            element.setAttribute("upperBound", String.valueOf(ab.getUpperBound()));
 
             constraints.appendChild(element);
         }

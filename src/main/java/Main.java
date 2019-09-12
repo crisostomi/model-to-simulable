@@ -35,6 +35,7 @@ public class Main {
         String username = System.getProperty("user.name");
         String testFolder = "/home/" + username + "/Dropbox/Tesisti/software/test-cases";
         test(TEST);
+//        reset(testFolder);
         System.out.println("All done!");
     }
 

@@ -51,14 +51,16 @@ public class ModelicaSimulableModel extends SimulableModel {
         return map;
     }
 
-    public Map<String, Double> getProteinConstraints() {
-        Map<String, Double> constraints = new HashMap<>();
+    public Set<UndefinedModelicaParameter> getProteinConstraints() {
+        Set<UndefinedModelicaParameter> constraints = new HashSet<>();
         for (ModelicaSimulableSpecies simulableSpecies: this.getSimulableSpeciesSet()) {
             Species species = simulableSpecies.getSpeciesInstantiate();
             if (species instanceof Protein) {
                 Protein p = (Protein) species;
                 if (p.getAbundance() != null) {
-                    constraints.put(simulableSpecies.getAverageConcentrationVariableName(), p.getAbundance());
+                    String errorVariable = simulableSpecies.getErrorVariableName();
+                    UndefinedModelicaParameter constraint = new UndefinedModelicaParameter(errorVariable, 0, 0.2);
+                    constraints.add(constraint);
                 }
             }
         }
@@ -439,24 +441,41 @@ public class ModelicaSimulableModel extends SimulableModel {
         StringBuilder equation = new StringBuilder("\tequation\n");
 
         declarations.append("\tReal " + getSimulationTimeVariableName() + ";\n");
+        declarations.append(getAbundanceMonitorCode());
 
-        for (BiologicalEntity be: this.getModelInstantiate().getBiologicalEntities()) {
-            if (be instanceof Compartment) {
-                Compartment comp = (Compartment) be;
-                for (Species species: comp.getSpecies()) {
-                    ModelicaSimulableSpecies simulableSpecies =
-                            (ModelicaSimulableSpecies) this.getSimulableSpecies(species.getId());
+        for (Compartment comp: this.getModelInstantiate().getCompartments()) {
+            for (Species species: comp.getSpecies()) {
+                ModelicaSimulableSpecies simulableSpecies =
+                        (ModelicaSimulableSpecies) this.getSimulableSpecies(species.getId());
 
-                    if (simulableSpecies != null) {
-                        declarations.append("\tReal " + simulableSpecies.getConcentrationVariableName() + ";\n");
-                        declarations.append("\tReal " + simulableSpecies.getAverageConcentrationVariableName() + ";\n");
-                        initialEquation.append("\t\t" + simulableSpecies.getAverageConcentrationVariableName() + " = 0;\n");
-                        equation.append(
-                                "\t\tder(" + simulableSpecies.getAverageConcentrationVariableName() + ")" +
-                                " = " +
-                                "1" + "/" + getSimulationTimeVariableName() + " * " + simulableSpecies.getConcentrationVariableName()
-                                + ";\n"
-                        );
+                if (simulableSpecies != null) {
+                    // code for average
+                    String conc = simulableSpecies.getConcentrationVariableName();
+                    String avg = simulableSpecies.getAverageConcentrationVariableName();
+                    String time = getSimulationTimeVariableName();
+                    declarations.append("\tReal " + conc + ";\n");
+                    declarations.append("\tReal " + avg + ";\n");
+                    initialEquation.append("\t\t" + avg + " = 0;\n");
+                    equation.append(
+                            "\t\tder(" + avg + ")" +
+                            " = " +
+                            "1" + "/" + time + " * " + conc
+                            + ";\n"
+                    );
+
+                    // code for error
+                    if (species instanceof Protein) {
+                        Protein protein = (Protein)species;
+                        if (protein.getAbundance() != null) {
+                            String abundance = simulableSpecies.getAbundanceVariableName();
+                            String error = simulableSpecies.getErrorVariableName();
+                            declarations.append("\tReal " + error + ";\n");
+                            equation.append(
+                                    "\t\t" + error + " = " + "abs(" + conc + "-" + abundance + ")" +
+                                    " / " +
+                                    abundance + ";\n"
+                            );
+                        }
                     }
                 }
             }
@@ -468,6 +487,28 @@ public class ModelicaSimulableModel extends SimulableModel {
         code.append(equation + "\n");
         code.append("end Monitor;\n");
         return new ModelicaCode(code.toString());
+    }
+
+    private StringBuilder getAbundanceMonitorCode() {
+        StringBuilder declarations = new StringBuilder();
+        for (Compartment comp: this.getModelInstantiate().getCompartments()) {
+            for (Species species : comp.getSpecies()) {
+                if (species instanceof Protein) {
+                    Protein protein = (Protein) species;
+                    if (protein.getAbundance() != null) {
+                        ModelicaSimulableSpecies simulableSpecies =
+                                (ModelicaSimulableSpecies) this.getSimulableSpecies(species.getId());
+
+                        if (simulableSpecies != null) {
+                            String abundance = simulableSpecies.getAbundanceVariableName();
+                            double abundanceValue = protein.getAbundance();
+                            declarations.append("\tReal " + abundance + " = " + abundanceValue + ";\n");
+                        }
+                    }
+                }
+            }
+        }
+        return declarations;
     }
 
     private String getModuleName(Compartment comp) {
