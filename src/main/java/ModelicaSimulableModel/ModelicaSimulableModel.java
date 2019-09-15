@@ -471,7 +471,7 @@ public class ModelicaSimulableModel extends SimulableModel {
                             String error = simulableSpecies.getErrorVariableName();
                             declarations.append("\tReal " + error + ";\n");
                             equation.append(
-                                    "\t\t" + error + " = " + "abs(" + conc + "-" + abundance + ")" +
+                                    "\t\t" + error + " = " + "abs(" + avg + "-" + abundance + ")" +
                                     " / " +
                                     abundance + ";\n"
                             );
