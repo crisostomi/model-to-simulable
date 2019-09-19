@@ -21,33 +21,37 @@ public class ConvenienceModelicaSimulableReaction extends ModelicaSimulableReact
         Set<Species> substrates = reaction.getReactants();
         StringBuilder code = new StringBuilder();
 
-        // prodotto di enzimi * (k_cat * prodotto di substrato_i / kM) / (prodotto di 1 + rapporto di substrato_i / kM)
+        // somma di enzimi * k_cat * prod_{substr}( 1 / sum_{i=0}^{substr_stoich} (Km/substr)^i )
         String k_cat = this.getCatalystConstantName();
         String k_m = this.getMichaelisConstantName();
+
+        // somma degli enzimi
+        code.append("( ");
         for (Species enzyme: enzymes) {
             ModelicaSimulableSpecies simulableSpecies =
                     (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(enzyme.getId());
-            code.append(simulableSpecies.getConcentrationVariableName() + "*");
+            code.append(simulableSpecies.getConcentrationVariableName() + " + ");
+        }
+        code.replace(code.length()-2, code.length(), "");
+
+        // * Kcat
+        code.append(") * "+k_cat+" * ( ");
+
+        //
+
+        for (Species substrate: substrates){
+            int stoich = reaction.getSpeciesStoich(substrate);
+            code.append("( 1 / ( 1 + ");
+            for (int i =1; i<=stoich;i++){
+                ModelicaSimulableSpecies simulableSpecies =
+                        (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(substrate.getId());
+                code.append("( "+k_m+"/"+simulableSpecies.getConcentrationVariableName()+")^"+stoich+" + ");
+            }
+            code.replace(code.length()-2, code.length(), "");
+            code.append(") ) * ");
         }
 
-        code.append("(" + k_cat);
-        for (Species substrate: substrates) {
-            ModelicaSimulableSpecies simulableSpecies =
-                    (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(substrate.getId());
-            code.append(
-                    "*(" + simulableSpecies.getConcentrationVariableName() + " / " + k_m + ")"
-            );
-        }
-        code.append(") / (");
-
-        for (Species substrate: substrates) {
-            ModelicaSimulableSpecies simulableSpecies =
-                    (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(substrate.getId());
-            code.append(
-                    "(1 + " + simulableSpecies.getConcentrationVariableName() + " / " + k_m + ")*"
-            );
-        }
-        code.replace(code.length()-1, code.length(), "");
+        code.replace(code.length()-2, code.length(), "");
         code.append(")");
 
         return new ModelicaCode(code.toString());
