@@ -38,14 +38,13 @@ public class ConvenienceModelicaSimulableReaction extends ModelicaSimulableReact
         code.append(") * "+k_cat+" * ( ");
 
         //
-
         for (Species substrate: substrates){
             int stoich = reaction.getSpeciesStoich(substrate);
             code.append("( 1 / ( 1 + ");
-            for (int i =1; i<=stoich;i++){
+            for (int i = 1; i<=stoich;i++){
                 ModelicaSimulableSpecies simulableSpecies =
                         (ModelicaSimulableSpecies) this.getLinkSimulableReactionComprises().getSimulableModel().getSimulableSpecies(substrate.getId());
-                code.append("( "+k_m+"/"+simulableSpecies.getConcentrationVariableName()+")^"+stoich+" + ");
+                code.append("( "+k_m+"/"+simulableSpecies.getConcentrationVariableName()+")^"+i+" + ");
             }
             code.replace(code.length()-2, code.length(), "");
             code.append(") ) * ");
